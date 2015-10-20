@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingTop="@dimen/spinner_divider_height"
+    android:paddingBottom="@dimen/spinner_divider_height"
+    android:weightSum="1">
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.1"/>
+
+    <cz.vutbr.fit.tam.meetme.gui.RoundImageView
+        android:id="@+id/list_group_item_img"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/list_group_none"
+        android:layout_weight="0.35"
+        android:padding="@dimen/spinner_divider_height"/>
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.1"/>
+
+    <TextView
+        android:id="@+id/list_group_item_text"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:textColor="@color/flat_brightness_difference"
+        android:text=""
+        android:layout_weight="0.35"/>
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.1"/>
+
+</LinearLayout>
