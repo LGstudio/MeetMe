@@ -13,13 +13,16 @@
         android:layout_height="fill_parent"
         android:layout_weight="0.05"/>
 
-    <cz.vutbr.fit.tam.meetme.gui.RoundImageView
+    <ImageView
         android:id="@+id/list_person_item_img"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:src="@drawable/list_single_none"
         android:layout_weight="0.18"
-        android:padding="@dimen/spinner_divider_height"/>
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        />
 
     <Space
         android:layout_width="0dp"
