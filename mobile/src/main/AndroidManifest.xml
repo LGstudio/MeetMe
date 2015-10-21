@@ -38,6 +38,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".service.GPSLocationService"/>
+        <service android:name=".service.SensorService"/>
     </application>
 
 </manifest>
