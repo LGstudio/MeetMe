@@ -27,7 +27,6 @@ import cz.vutbr.fit.tam.meetme.service.SensorService;
 
 public class MainActivity extends AppCompatActivity {
 
-    private GroupColor groupColors;
     private ArrayList<GroupInfo> groups;
 
     private boolean isLoggedIn = true;
@@ -43,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        groupColors = new GroupColor();
         groups = new ArrayList<>();
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
@@ -61,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO: error
         }
 
-        startService(new Intent(this, SensorService.class));
+        /**startService(new Intent(this, SensorService.class));
         startService(new Intent(this, GPSLocationService.class));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
-        );
+        ); */
 
     }
 
