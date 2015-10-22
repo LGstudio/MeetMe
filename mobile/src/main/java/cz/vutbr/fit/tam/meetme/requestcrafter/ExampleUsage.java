@@ -26,17 +26,17 @@ public class ExampleUsage {
                 try {
                     GroupInfo gi = rc.restGroupCreate(loc);
 
-                    GroupInfo gi3 = rc.restGroupData(gi.getHash(), loc);
+                    GroupInfo gi3 = rc.restGroupData(gi.hash, loc);
 
-                    rc.restGroupDetach(gi.getHash());
+                    rc.restGroupDetach(gi.hash);
 
-                    GroupInfo gi4 = rc.restGroupAttach(gi.getHash(), loc);
+                    GroupInfo gi4 = rc.restGroupAttach(gi.hash, loc);
 
-                    GroupInfo gi5 = rc.restGroupData(gi.getHash(), loc);
+                    GroupInfo gi5 = rc.restGroupData(gi.hash, loc);
 
                     loc.setLatitude(1.548799);
                     loc.setLongitude(0.988411);
-                    GroupInfo gi6 = rc.restGroupData(gi.getHash(), loc);
+                    GroupInfo gi6 = rc.restGroupData(gi.hash, loc);
                 }
                 catch(InternalErrorException e){
                     Log.e(LOG_TAG, e.getMessage());

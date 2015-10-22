@@ -70,7 +70,7 @@ public class RequestCrafter {
             if(this.id == -1) {
                 //id not set -> call install and write id to shared prefs
                 DeviceInfo di = this.restInstall();
-                this.id = di.getId();
+                this.id = di.id;//.getId();
 
                 //save to shardprefs
                 SharedPreferences.Editor editor = preferences.edit();
@@ -93,7 +93,7 @@ public class RequestCrafter {
         if(di.getErrorCode() != 0)
             throw new InternalErrorException(di.getErrorMessage());
 
-        return di.getDeviceInfo();
+        return di.deviceInfo;//getDeviceInfo();
     }
 
     public GroupInfo restGroupCreate(Location location) throws InternalErrorException{
@@ -108,7 +108,7 @@ public class RequestCrafter {
         if(gri.getErrorCode() != 0)
             throw new InternalErrorException(gri.getErrorMessage());
 
-        return restGroupAttach(gri.getGroupInfo().getHash(), location);
+        return restGroupAttach(gri.groupInfo.hash/*getGroupInfo().getHash()*/, location);
     }
 
     public GroupInfo restGroupData(String groupHash, Location location) throws InternalErrorException{
@@ -130,7 +130,7 @@ public class RequestCrafter {
         if(gri.getErrorCode() != 0)
             throw new InternalErrorException(gri.getErrorMessage());
 
-        return gri.getGroupInfo();
+        return gri.groupInfo;//getGroupInfo();
     }
 
     public GroupInfo restGroupAttach(String groupHash, Location location) throws InternalErrorException{
@@ -151,7 +151,7 @@ public class RequestCrafter {
         if(gri.getErrorCode() != 0)
             throw new InternalErrorException(gri.getErrorMessage());
 
-        return gri.getGroupInfo();
+        return gri.groupInfo;//getGroupInfo();
     }
 
     public void restGroupDetach(String groupHash) throws InternalErrorException{
