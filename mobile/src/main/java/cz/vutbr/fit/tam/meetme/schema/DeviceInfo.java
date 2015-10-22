@@ -4,9 +4,10 @@ package cz.vutbr.fit.tam.meetme.schema;
  * Created by Lada on 13.10.2015.
  */
 public class DeviceInfo {
-    private Integer id;
-    private Double latitude;
-    private Double longitude;
+    public Integer id;
+    public String name;
+    public Double latitude;
+    public Double longitude;
 
     public Integer getId() {
         return id;
@@ -30,5 +31,10 @@ public class DeviceInfo {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public String toString(){
+        return name;
     }
 }

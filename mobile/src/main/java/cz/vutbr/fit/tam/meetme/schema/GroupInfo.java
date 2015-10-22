@@ -8,9 +8,9 @@ import java.util.List;
  */
 public class GroupInfo {
 
-    private Integer id;
-    private String hash;
-    private List<DeviceInfo> deviceInfoList;
+    public Integer id;
+    public String hash;
+    public List<DeviceInfo> deviceInfoList;
 
     public Integer getId() {
         return id;
@@ -37,5 +37,12 @@ public class GroupInfo {
 
     public void setDeviceInfoList(List<DeviceInfo> deviceInfoList) {
         this.deviceInfoList = deviceInfoList;
+    }
+
+    public String toString(){
+        if (id != 0)
+            return String.valueOf(deviceInfoList.size());
+        else
+            return hash;
     }
 }

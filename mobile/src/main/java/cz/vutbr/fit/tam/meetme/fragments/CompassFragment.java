@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -15,11 +17,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import cz.vutbr.fit.tam.meetme.R;
-import cz.vutbr.fit.tam.meetme.data.DeviceInfo;
-import cz.vutbr.fit.tam.meetme.data.GroupInfo;
+import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
+import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
-import cz.vutbr.fit.tam.meetme.gui.RoundImageView;
-import cz.vutbr.fit.tam.meetme.gui.SquareImageView;
 
 /**
  * @author Gebriel Lehocky
@@ -49,8 +49,18 @@ public class CompassFragment extends MeetMeFragment{
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
         arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
 
-        arrowArea.addView(new ArrowView(getContext()));
+        //-------------------
 
+        ArrowView a = new ArrowView(getContext());
+        arrowArea.addView(a);
+
+        RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
+        r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        r.setDuration((long) 2*1500);
+        r.setRepeatCount(0);
+        a.startAnimation(r);
+
+        //--------------------
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -89,9 +99,9 @@ public class CompassFragment extends MeetMeFragment{
     public void addGroupsToSpinner(){
 
         GroupInfo allGroup = new GroupInfo();
-        allGroup.groupHash = getString(R.string.dropdown_all_group);
-        allGroup.groupColor = R.color.flat_brightness_difference;
-        allGroup.groupId = 0;
+        allGroup.hash = getString(R.string.dropdown_all_group);
+        //allGroup.groupColor = R.color.flat_brightness_difference;
+        allGroup.id = 0;
 
         groupInfoItems = new GroupInfo[groups.size()+1];
         groupInfoItems[0] = allGroup;
@@ -119,28 +129,28 @@ public class CompassFragment extends MeetMeFragment{
         int i = 1;
 
         if (selectedGroup == 0){
-            allDevices.color = R.color.flat_brightness_difference;
+            //allDevices.color = R.color.flat_brightness_difference;
 
-            for (GroupInfo g: groups) deviceCount += g.getSize();
+            for (GroupInfo g: groups) deviceCount += g.deviceInfoList.size();
 
             deviceInfoItems = new DeviceInfo[deviceCount];
             deviceInfoItems[0] = allDevices;
 
             for (GroupInfo g: groups){
-                for (DeviceInfo d: g.getDeviceList()){
+                for (DeviceInfo d: g.deviceInfoList){
                     deviceInfoItems[i] = d;
                     i++;
                 }
             }
         }
         else {
-            allDevices.color = groups.get(selectedGroup-1).groupColor;
+            //allDevices.color = groups.get(selectedGroup-1).groupColor;
 
-            deviceCount += groups.get(selectedGroup-1).getSize();
+            deviceCount += groups.get(selectedGroup-1).deviceInfoList.size();
 
             deviceInfoItems = new DeviceInfo[deviceCount];
             deviceInfoItems[0] = allDevices;
-            for (DeviceInfo d: groups.get(selectedGroup-1).getDeviceList()){
+            for (DeviceInfo d: groups.get(selectedGroup-1).deviceInfoList){
                 deviceInfoItems[i] = d;
                 i++;
             }
@@ -180,13 +190,13 @@ public class CompassFragment extends MeetMeFragment{
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
             groupSizeText.setText(groupInfoItems[position].toString());
 
-
+/**
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
             icon = icon.mutate();
             icon.setColorFilter(getResources().getColor(groupInfoItems[position].groupColor), PorterDuff.Mode.MULTIPLY);
             groupIcon.setImageDrawable(icon);
-
+*/
             return spinnerElement;
         }
 
@@ -210,13 +220,13 @@ public class CompassFragment extends MeetMeFragment{
             TextView personText = (TextView) spinnerElement.findViewById(R.id.list_person_item_text);
             personText.setText(deviceInfoItems[position].toString());
 
-
+/**
             ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
             icon = icon.mutate();
             icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
             personIcon.setImageDrawable(icon);
-
+*/
             return spinnerElement;
         }
 
