@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MeetMe</string>
-    <string name="google_maps_key">abcd</string>
+    <string name="google_maps_key">AIzaSyCrBSU3wh4W3uAl_BjMVjeoDFLgIKc25F8</string>
 
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>

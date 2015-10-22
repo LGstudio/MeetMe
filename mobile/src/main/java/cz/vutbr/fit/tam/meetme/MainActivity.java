@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageButton;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,14 +18,15 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import java.util.ArrayList;
 import java.util.Random;
 
-import cz.vutbr.fit.tam.meetme.data.*;
 import cz.vutbr.fit.tam.meetme.fragments.*;
+import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
+import cz.vutbr.fit.tam.meetme.schema.GroupColor;
+import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
 import cz.vutbr.fit.tam.meetme.service.SensorService;
 
 public class MainActivity extends AppCompatActivity {
 
-    private GroupColor groupColors;
     private ArrayList<GroupInfo> groups;
 
     private boolean isLoggedIn = true;
@@ -42,25 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        groupColors = new GroupColor();
         groups = new ArrayList<>();
-
-
-        if (!checkGooglePlayServices()) {
-            // TODO: error
-        }
-
-        startService(new Intent(this, SensorService.class));
-        startService(new Intent(this, GPSLocationService.class));
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
-        );
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
-        );
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
@@ -71,6 +53,23 @@ public class MainActivity extends AppCompatActivity {
         else {
             //TODO: LOGIN SCREEN
         }
+
+
+        if (!checkGooglePlayServices()) {
+            // TODO: error
+        }
+
+        /**startService(new Intent(this, SensorService.class));
+        startService(new Intent(this, GPSLocationService.class));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
+        );
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
+        ); */
+
     }
 
     @Override
@@ -180,19 +179,21 @@ public class MainActivity extends AppCompatActivity {
 
         for (int g = 0; g < 6; g++){
             GroupInfo group = new GroupInfo();
-            group.groupHash = "Group_" + g;
-            group.groupColor = groupColors.getNextColor();
-            group.groupId = g + 1;
+            group.hash = "Group_" + g;
+            group.id = g + 1;
 
             int max = g%4 + 2;
 
+            ArrayList<DeviceInfo> deviceInfoList = new ArrayList<>();
+
             for (int d = 0; d < max; d++){
                 DeviceInfo device = new DeviceInfo();
-                device.deviceId = 10*g + d;
+                device.id = 10 * g + d;
                 device.name = randomString(10+d);
-                group.addDevice(device);
+                deviceInfoList.add(device);
             }
 
+            group.setDeviceInfoList(deviceInfoList);
             groups.add(group);
         }
 

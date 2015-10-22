@@ -5,10 +5,11 @@ package cz.vutbr.fit.tam.meetme.schema;
  */
 public class DeviceInfo {
     public Integer id;
+    public String name;
     public Double latitude;
     public Double longitude;
 
-    /*public Integer getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -30,5 +31,10 @@ public class DeviceInfo {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
-    }*/
+    }
+
+    @Override
+    public String toString(){
+        return name;
+    }
 }

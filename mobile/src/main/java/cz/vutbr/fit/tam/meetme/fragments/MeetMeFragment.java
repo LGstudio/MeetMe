@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
 
-import cz.vutbr.fit.tam.meetme.data.GroupInfo;
+import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 
 /**
  * @author Gabriel Lehocky

@@ -10,8 +10,8 @@ public class GroupInfo {
 
     public Integer id;
     public String hash;
-    private List<DeviceInfo> deviceInfoList;
-/*
+    public List<DeviceInfo> deviceInfoList;
+
     public Integer getId() {
         return id;
     }
@@ -27,7 +27,7 @@ public class GroupInfo {
     public void setHash(String hash) {
         this.hash = hash;
     }
-*/
+
     public List<DeviceInfo> getDeviceInfoList() {
         if(deviceInfoList==null)
             deviceInfoList = new ArrayList<>();
@@ -37,5 +37,12 @@ public class GroupInfo {
 
     public void setDeviceInfoList(List<DeviceInfo> deviceInfoList) {
         this.deviceInfoList = deviceInfoList;
+    }
+
+    public String toString(){
+        if (id != 0)
+            return String.valueOf(deviceInfoList.size());
+        else
+            return hash;
     }
 }

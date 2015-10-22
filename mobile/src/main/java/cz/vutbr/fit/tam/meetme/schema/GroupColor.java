@@ -1,4 +1,4 @@
-package cz.vutbr.fit.tam.meetme.data;
+package cz.vutbr.fit.tam.meetme.schema;
 
 import java.util.HashMap;
 import java.util.Map;
