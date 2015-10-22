@@ -5,13 +5,13 @@ package cz.vutbr.fit.tam.meetme.schema;
  */
 public class GroupResponseInfo extends ResponseInfo {
 
-    private GroupInfo groupInfo;
-
+    public GroupInfo groupInfo;
+/*
     public GroupInfo getGroupInfo() {
         return groupInfo;
     }
 
     public void setGroupInfo(GroupInfo groupInfo) {
         this.groupInfo = groupInfo;
-    }
+    }*/
 }

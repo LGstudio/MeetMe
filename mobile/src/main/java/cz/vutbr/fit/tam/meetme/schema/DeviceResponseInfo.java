@@ -6,14 +6,14 @@ package cz.vutbr.fit.tam.meetme.schema;
 public class DeviceResponseInfo extends ResponseInfo{
 
 
-    private DeviceInfo deviceInfo;
+    public DeviceInfo deviceInfo;
 
-
+/*
     public DeviceInfo getDeviceInfo() {
         return deviceInfo;
     }
 
     public void setDeviceInfo(DeviceInfo deviceInfo) {
         this.deviceInfo = deviceInfo;
-    }
+    }*/
 }

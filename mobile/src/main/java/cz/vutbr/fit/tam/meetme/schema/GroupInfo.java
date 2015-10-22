@@ -8,10 +8,10 @@ import java.util.List;
  */
 public class GroupInfo {
 
-    private Integer id;
-    private String hash;
+    public Integer id;
+    public String hash;
     private List<DeviceInfo> deviceInfoList;
-
+/*
     public Integer getId() {
         return id;
     }
@@ -27,7 +27,7 @@ public class GroupInfo {
     public void setHash(String hash) {
         this.hash = hash;
     }
-
+*/
     public List<DeviceInfo> getDeviceInfoList() {
         if(deviceInfoList==null)
             deviceInfoList = new ArrayList<>();
