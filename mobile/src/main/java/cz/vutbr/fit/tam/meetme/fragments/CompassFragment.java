@@ -10,12 +10,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.data.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.data.GroupInfo;
+import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 import cz.vutbr.fit.tam.meetme.gui.RoundImageView;
 import cz.vutbr.fit.tam.meetme.gui.SquareImageView;
 
@@ -28,6 +30,7 @@ public class CompassFragment extends MeetMeFragment{
 
     private View view;
 
+    private RelativeLayout arrowArea;
     private Spinner groupSpinner;
     private Spinner personSpinner;
     protected int selectedGroup = 0;
@@ -35,6 +38,7 @@ public class CompassFragment extends MeetMeFragment{
 
     private GroupInfo[] groupInfoItems;
     private DeviceInfo[] deviceInfoItems;
+    private ArrowView[] arrows;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +47,9 @@ public class CompassFragment extends MeetMeFragment{
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
+        arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
+
+        arrowArea.addView(new ArrowView(getContext()));
 
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -142,6 +149,10 @@ public class CompassFragment extends MeetMeFragment{
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, deviceInfoItems));
 
         personSpinner.setSelection(selectedPerson);
+    }
+
+    public void createArrows(){
+
     }
 
     /**
