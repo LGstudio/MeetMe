@@ -1,17 +1,28 @@
 package cz.vutbr.fit.tam.meetme;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 import cz.vutbr.fit.tam.meetme.data.*;
 import cz.vutbr.fit.tam.meetme.fragments.*;
+import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
+import cz.vutbr.fit.tam.meetme.service.SensorService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,9 +46,21 @@ public class MainActivity extends AppCompatActivity {
         groupColors = new GroupColor();
         groups = new ArrayList<>();
 
-        /**
-         * Start Services here
-         */
+
+        if (!checkGooglePlayServices()) {
+            // TODO: error
+        }
+
+        startService(new Intent(this, SensorService.class));
+        startService(new Intent(this, GPSLocationService.class));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
+        );
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
+        );
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
@@ -48,6 +71,61 @@ public class MainActivity extends AppCompatActivity {
         else {
             //TODO: LOGIN SCREEN
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        stopService(new Intent(this, GPSLocationService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
+
+        stopService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+    }
+
+    private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Context app_context = getApplicationContext();
+
+            float x = Float.parseFloat(app_context.getString(R.string.rotation_x));
+            float y = Float.parseFloat(app_context.getString(R.string.rotation_y));
+            float z = Float.parseFloat(app_context.getString(R.string.rotation_z));
+
+            // TODO: angle (arrow rotation) = from.bearingTo(to) - x (azimuth)
+            // TODO: distanceTo
+        }
+    };
+
+    private BroadcastReceiver gpsReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Context app_context = getApplicationContext();
+
+            double latitude  = Double.parseDouble(app_context.getString(R.string.gps_latitude));
+            double longitude = Double.parseDouble(app_context.getString(R.string.gps_longitude));
+        }
+    };
+
+    private boolean checkGooglePlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                // TODO: show error dialog
+            }
+            else {
+                // TODO: error (not supported device)
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private void showLoggedInLayout(){

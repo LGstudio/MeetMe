@@ -9,4 +9,13 @@
 
     <string name="dropdown_all_group">All</string>
     <string name="dropdown_all_contact">Everybody</string>
+
+    <string name="gps_intent_filter">gps-location-event</string>
+    <string name="gps_latitude">gps-latitude</string>
+    <string name="gps_longitude">gps-longitude</string>
+
+    <string name="rotation_intent_filter">gps-location-event</string>
+    <string name="rotation_x">rotation-x</string>
+    <string name="rotation_y">rotation-y</string>
+    <string name="rotation_z">rotation-z</string>
 </resources>
