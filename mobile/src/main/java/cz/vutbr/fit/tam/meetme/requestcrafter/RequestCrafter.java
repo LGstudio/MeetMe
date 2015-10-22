@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * Created by Lada on 12.10.2015.
  */
-public class RequestCrafter {
+public class RequestCrafter implements RequestCrafterInterface{
     private static final String LOG_TAG = "RequestCrafter";
     private static final String PREFS_NAME = "MeetMePreferences";
     private static final String APP_ID = "id";

@@ -20,8 +20,9 @@ public class ExampleUsage {
         new Thread(new Runnable() {
             public void run() {
 
-                RequestCrafter rc = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), context);
+                RequestCrafterInterface rc = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), context);
                 Location loc = new Location("testLocation");
+
 
                 try {
                     GroupInfo gi = rc.restGroupCreate(loc);
