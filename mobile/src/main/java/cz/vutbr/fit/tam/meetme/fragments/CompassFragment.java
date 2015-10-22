@@ -16,8 +16,11 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.HashMap;
+
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
+import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 
@@ -36,6 +39,9 @@ public class CompassFragment extends MeetMeFragment{
     protected int selectedGroup = 0;
     protected int selectedPerson = 0;
 
+    private GroupColor colors;
+    private HashMap<Integer, Integer> groupColor;
+
     private GroupInfo[] groupInfoItems;
     private DeviceInfo[] deviceInfoItems;
     private ArrowView[] arrows;
@@ -45,22 +51,13 @@ public class CompassFragment extends MeetMeFragment{
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
 
+        colors = new GroupColor();
+        groupColor = new HashMap<>();
+
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
         arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
 
-        //-------------------
-
-        ArrowView a = new ArrowView(getContext());
-        arrowArea.addView(a);
-
-        RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
-        r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        r.setDuration((long) 2*1500);
-        r.setRepeatCount(0);
-        a.startAnimation(r);
-
-        //--------------------
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -100,19 +97,26 @@ public class CompassFragment extends MeetMeFragment{
 
         GroupInfo allGroup = new GroupInfo();
         allGroup.hash = getString(R.string.dropdown_all_group);
-        //allGroup.groupColor = R.color.flat_brightness_difference;
         allGroup.id = 0;
+        groupColor.put(0, R.color.flat_brightness_difference);
 
         groupInfoItems = new GroupInfo[groups.size()+1];
         groupInfoItems[0] = allGroup;
         for (int i = 0; i < groups.size(); i++){
             groupInfoItems[i+1] = groups.get(i);
+            addGroupColor(groupInfoItems[i+1].id);
         }
 
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groupInfoItems));
 
         groupSpinner.setSelection(selectedGroup);
         if(selectedGroup == 0) addPersonsToSpinner();
+    }
+
+    private void addGroupColor(int id){
+        if (!groupColor.containsKey(id)){
+            groupColor.put(id, colors.getNextColor());
+        }
     }
 
     /**
@@ -162,7 +166,18 @@ public class CompassFragment extends MeetMeFragment{
     }
 
     public void createArrows(){
+        //-------------------
 
+        ArrowView a = new ArrowView(getContext());
+        arrowArea.addView(a);
+
+        RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
+        r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        r.setDuration((long) 2*1500);
+        r.setRepeatCount(0);
+        a.startAnimation(r);
+
+        //--------------------
     }
 
     /**
@@ -190,13 +205,13 @@ public class CompassFragment extends MeetMeFragment{
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
             groupSizeText.setText(groupInfoItems[position].toString());
 
-/**
+
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
             icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(groupInfoItems[position].groupColor), PorterDuff.Mode.MULTIPLY);
+            icon.setColorFilter(getResources().getColor(groupColor.get(groupInfoItems[position].id)), PorterDuff.Mode.MULTIPLY);
             groupIcon.setImageDrawable(icon);
-*/
+
             return spinnerElement;
         }
 
