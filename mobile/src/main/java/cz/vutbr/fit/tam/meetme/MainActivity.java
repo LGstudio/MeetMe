@@ -4,12 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -47,6 +51,16 @@ public class MainActivity extends AppCompatActivity {
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
 
+        if (!isNetworkAvailable()) {
+            // TODO: connect to network
+            Log.d("DEBUG", "network disabled");
+        }
+
+        if (!isLocationEnabled()) {
+            // TODO: enable location
+            Log.d("DEBUG", "location disabled");
+        }
+
         if (isLoggedIn){
             showLoggedInLayout();
         }
@@ -54,22 +68,48 @@ public class MainActivity extends AppCompatActivity {
             //TODO: LOGIN SCREEN
         }
 
-
-        if (!checkGooglePlayServices()) {
-            // TODO: error
-        }
-
-        /**startService(new Intent(this, SensorService.class));
-        startService(new Intent(this, GPSLocationService.class));
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
-        );
+        startService(new Intent(this, SensorService.class));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
-        ); */
+        );
 
+        if (checkGooglePlayServices()) {
+
+            startService(new Intent(this, GPSLocationService.class));
+
+            LocalBroadcastManager.getInstance(this).registerReceiver(
+                    gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
+            );
+        }
+        else {
+            // TODO: error
+        }
+    }
+
+    protected boolean isNetworkAvailable() {
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    protected boolean isLocationEnabled() {
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        boolean gps;
+        boolean net;
+
+        try {
+            gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception e) {
+            return false;
+        }
+
+        return (gps && net);
     }
 
     @Override
@@ -87,11 +127,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Context app_context = getApplicationContext();
+            String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
+            String str_y = intent.getStringExtra(context.getString(R.string.rotation_y));
+            String str_z = intent.getStringExtra(context.getString(R.string.rotation_z));
 
-            float x = Float.parseFloat(app_context.getString(R.string.rotation_x));
-            float y = Float.parseFloat(app_context.getString(R.string.rotation_y));
-            float z = Float.parseFloat(app_context.getString(R.string.rotation_z));
+            float x = Float.parseFloat(str_x);
+            float y = Float.parseFloat(str_y);
+            float z = Float.parseFloat(str_z);
 
             // TODO: angle (arrow rotation) = from.bearingTo(to) - x (azimuth)
             // TODO: distanceTo
@@ -102,10 +144,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Context app_context = getApplicationContext();
+            String str_latitude = intent.getStringExtra(context.getString(R.string.gps_latitude));
+            String str_longitude = intent.getStringExtra(context.getString(R.string.gps_longitude));
 
-            double latitude  = Double.parseDouble(app_context.getString(R.string.gps_latitude));
-            double longitude = Double.parseDouble(app_context.getString(R.string.gps_longitude));
+            double latitude  = Double.parseDouble(str_latitude);
+            double longitude = Double.parseDouble(str_longitude);
         }
     };
 
