@@ -1,32 +1,50 @@
 package cz.vutbr.fit.tam.meetme;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.location.Location;
+import android.net.Uri;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.fragments.*;
+import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
+import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafterInterface;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
+import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
 import cz.vutbr.fit.tam.meetme.service.SensorService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ServiceConnection {
 
+    private static final String LOG_TAG = "MainActivity";
+    public static final String GROUP_HASH="group_hash";
     private ArrayList<GroupInfo> groups;
 
     private boolean isLoggedIn = true;
@@ -37,15 +55,23 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton gpsStatus;
     private ImageButton netStatus;
 
+    private RequestCrafter resourceCrafter;
+    private ServiceConnection mConnection = this;
+    private String groupHash;
+    private static MainActivity activity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.activity = this;
 
         groups = new ArrayList<>();
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
+
+        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
 
         if (isLoggedIn){
             showLoggedInLayout();
@@ -69,6 +95,106 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
         ); */
+
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.d("GetGroupDataService", "onStart");
+        appInit();
+    }
+
+    /**
+     * Pokud app je zapla z App drawer -> vytvari group pro sdileni
+     * Pokud byla zapla klikem na odkaz -> pripoji se do group a zapne GetGroupDataService
+     * */
+    private void appInit() {
+        final Location loc = new Location("testLocation");
+
+        this.groupHash = getIntentData();
+        if(groupHash != null){
+            Log.d(LOG_TAG, "joining group:" + groupHash);
+            //join group
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        GroupInfo gi = resourceCrafter.restGroupAttach(groupHash, loc);
+                    }
+                    catch(InternalErrorException e){
+                        Log.e(LOG_TAG, e.getMessage());
+                    }
+
+                    Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
+                    i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
+                    bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+                }
+            }).start();
+        }
+        else{
+            //create group
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        GroupInfo gi = resourceCrafter.restGroupCreate(loc);
+                        MainActivity.this.groupHash = gi.getHash();
+                        Log.d(LOG_TAG, "created group:" + gi.getHash());
+                    }
+                    catch(InternalErrorException e){
+                        Log.e(LOG_TAG, e.getMessage());
+                    }
+
+                    Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
+                    i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
+                    bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+                }
+            }).start();
+        }
+
+
+    }
+
+
+    @Override
+    public void onStop(){
+        Log.d("GetGroupDataService", "onStop");
+        super.onStop();
+        unbindService(mConnection);
+    }
+
+
+    /**
+    * @return groupHash
+    * */
+    private String getIntentData() {
+        if(getIntent().getData()!= null) {
+            Log.d(LOG_TAG, "with URL data");
+
+            try{
+                //http://scattergoriesonline.net/meetme/groupHash
+                Uri data = getIntent().getData();
+
+                List<String> params = data.getPathSegments();
+                //String first = params.get(0); // "meetme"
+                return params.get(1); // "groupHash"
+            }catch (Exception e){
+                Log.d(LOG_TAG, "Exception durring intent.gedData(): " + e.getMessage());
+            }
+        }
+        else{
+            Log.d(LOG_TAG, "without URL data");
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
 
     }
 
@@ -204,6 +330,14 @@ public class MainActivity extends AppCompatActivity {
         for( int i = 0; i < len; i++ )
             sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
         return sb.toString();
+    }
+
+    public static MainActivity getActivity() {
+        return activity;
+    }
+
+    public void showGroupData(GroupInfo gi){
+        Toast.makeText(this.getApplicationContext(), gi.id+"", Toast.LENGTH_SHORT).show();
     }
 
     /**
