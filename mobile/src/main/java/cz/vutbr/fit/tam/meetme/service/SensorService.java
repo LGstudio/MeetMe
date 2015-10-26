@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import cz.vutbr.fit.tam.meetme.R;
 
@@ -30,6 +31,11 @@ public class SensorService extends Service implements SensorEventListener {
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if (accelerometer == null || magnetometer == null) {
+
+            // TODO: device not supported
+        }
 
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
@@ -83,9 +89,9 @@ public class SensorService extends Service implements SensorEventListener {
         Context context = getApplicationContext();
 
         Intent intent = new Intent(context.getString(R.string.rotation_intent_filter));
-        intent.putExtra(context.getString(R.string.rotation_x), Double.toString(azimuth));
-        intent.putExtra(context.getString(R.string.rotation_y), Double.toString(roll));
-        intent.putExtra(context.getString(R.string.rotation_z), Double.toString(pitch));
+        intent.putExtra(context.getString(R.string.rotation_x), Float.toString(azimuth));
+        intent.putExtra(context.getString(R.string.rotation_y), Float.toString(roll));
+        intent.putExtra(context.getString(R.string.rotation_z), Float.toString(pitch));
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
