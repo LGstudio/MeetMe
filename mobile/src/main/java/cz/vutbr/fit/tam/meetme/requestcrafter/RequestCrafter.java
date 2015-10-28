@@ -32,7 +32,7 @@ public class RequestCrafter implements RequestCrafterInterface{
     private static final String PREFS_NAME = "MeetMePreferences";
     private static final String APP_ID = "id";
 
-    public final String REST_HOST_URL = "http://scattergoriesonline.net/mm/rest/api";
+    public final String REST_HOST_URL = "http://meetme.poul.cz/rest/api";
 
     public final String REST_INSTALL = REST_HOST_URL+"/install";
 
