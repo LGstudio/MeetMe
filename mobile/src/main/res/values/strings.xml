@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MeetMe</string>
-    <string name="google_maps_key">AIzaSyCrBSU3wh4W3uAl_BjMVjeoDFLgIKc25F8</string>
+    <string name="google_maps_key">AIzaSyAEouuKYouxdE8pWZAC5_ONgbEZ__Jtf0Y</string>
 
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
@@ -14,7 +14,7 @@
     <string name="gps_latitude">gps-latitude</string>
     <string name="gps_longitude">gps-longitude</string>
 
-    <string name="rotation_intent_filter">gps-orientation-event</string>
+    <string name="rotation_intent_filter">gps-location-event</string>
     <string name="rotation_x">rotation-x</string>
     <string name="rotation_y">rotation-y</string>
     <string name="rotation_z">rotation-z</string>

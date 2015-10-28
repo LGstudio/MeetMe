@@ -10,7 +10,6 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -27,7 +26,6 @@ public class GPSLocationService extends Service implements
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private LocationAvailability mLocationAvailability;
     private Location mLastLocation;
     private boolean mRequestingLocationUpdates;
 
@@ -80,8 +78,7 @@ public class GPSLocationService extends Service implements
             mGoogleApiClient.connect();
         }
 
-        mLocationAvailability = LocationServices.FusedLocationApi.getLocationAvailability(mGoogleApiClient);
-
+        sendLocation();
         return START_STICKY;
     }
 
@@ -146,16 +143,16 @@ public class GPSLocationService extends Service implements
             //last_latitude  = latitude;
             //last_longitude = longitude;
 
-
             Context context = getApplicationContext();
 
             Intent intent = new Intent(context.getString(R.string.gps_intent_filter));
             intent.putExtra(context.getString(R.string.gps_latitude), Double.toString(latitude));
             intent.putExtra(context.getString(R.string.gps_longitude), Double.toString(longitude));
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
         }
         else {
-            // TODO
+            // TODO: send error code > 0
         }
     }
 }
