@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     public void showGroupData(GroupInfo g){
+        Toast.makeText(this.getApplicationContext(),"group: " + g.id,Toast.LENGTH_SHORT);
         groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
     }
@@ -365,7 +366,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             fragCompass.changeLayout();
-            Toast.makeText(getApplicationContext(), "groups: " + data.groupInfoItems.length, Toast.LENGTH_SHORT);
         }
     }
 }

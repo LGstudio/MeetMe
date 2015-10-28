@@ -57,7 +57,7 @@ public class CompassFragment extends MeetMeFragment{
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedGroup = position;
                 selectedPerson = 0;
-                //addPersonsToSpinner();
+                addDevicesToSpinner();
                 redrawCompass();
             }
 
@@ -79,13 +79,14 @@ public class CompassFragment extends MeetMeFragment{
             }
         });
 
-        //addGroupsToSpinner();
+        changeLayout();
 
         return view;
     }
 
     public void changeLayout(){
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
+        addDevicesToSpinner();
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
     }
 
@@ -122,50 +123,29 @@ public class CompassFragment extends MeetMeFragment{
     /**
      * Adds the connected Devices into spinner
      * based on the ArrayList<GroupInfo> groups list.
+     */
+    public void addDevicesToSpinner(){
 
-    public void addPersonsToSpinner(){
-
-        DeviceInfo allDevices = new DeviceInfo();
-        allDevices.name = getString(R.string.dropdown_all_contact);
-
-
-        int deviceCount = 1;
-        int i = 1;
+        devices = new ArrayList<>();
+        DeviceInfo all = new DeviceInfo();
+        all.id = 0;
+        all.name = getString(R.string.dropdown_all_contact);
+        devices.add(all);
 
         if (selectedGroup == 0){
-            //allDevices.color = R.color.flat_brightness_difference;
-
-            for (GroupInfo g: groups) deviceCount += g.deviceInfoList.size();
-
-            deviceInfoItems = new DeviceInfo[deviceCount];
-            deviceInfoItems[0] = allDevices;
-
-            for (GroupInfo g: groups){
+            for (GroupInfo g: data.groups){
                 for (DeviceInfo d: g.deviceInfoList){
-                    deviceInfoItems[i] = d;
-                    i++;
+                    devices.add(d);
                 }
             }
         }
         else {
-            //allDevices.color = groups.get(selectedGroup-1).groupColor;
-
-            deviceCount += groups.get(selectedGroup-1).deviceInfoList.size();
-
-            deviceInfoItems = new DeviceInfo[deviceCount];
-            deviceInfoItems[0] = allDevices;
-            for (DeviceInfo d: groups.get(selectedGroup-1).deviceInfoList){
-                deviceInfoItems[i] = d;
-                i++;
+            for (DeviceInfo d: data.groups.get(selectedGroup).deviceInfoList){
+                devices.add(d);
             }
         }
-
-        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, deviceInfoItems));
-
-        personSpinner.setSelection(selectedPerson);
     }
 
-     */
 
     public void createArrows(){
         //-------------------

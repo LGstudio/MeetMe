@@ -11,6 +11,6 @@ public class DeviceInfo {
 
     @Override
     public String toString(){
-        return name;
+        return "(" + id + ")";
     }
 }

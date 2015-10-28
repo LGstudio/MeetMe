@@ -13,9 +13,11 @@ public class GroupInfo {
     public List<DeviceInfo> deviceInfoList;
 
     public String toString(){
-        if (id != 0)
+        return "(" + id + ")";
+        /*if (id != 0)
             return String.valueOf(deviceInfoList.size());
         else
             return hash;
+            */
     }
 }

@@ -1,6 +1,7 @@
 package cz.vutbr.fit.tam.meetme.schema;
 
 import android.app.Activity;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,10 +31,11 @@ public class AllConnectionData {
 
         groups = new ArrayList<>();
 
-        GroupInfo noneGroup = new GroupInfo();
-        noneGroup.hash = parent.getString(R.string.dropdown_all_group);
-        noneGroup.id = 0;
-        groups.add(noneGroup);
+        GroupInfo allGroup = new GroupInfo();
+        allGroup.hash = parent.getString(R.string.dropdown_all_group);
+        allGroup.id = 0;
+        allGroup.deviceInfoList = new ArrayList<>();
+        groups.add(allGroup);
 
         groupColor.put(0, R.color.flat_brightness_difference);
     }
