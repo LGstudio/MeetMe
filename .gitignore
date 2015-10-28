@@ -1,3 +1,6 @@
+/.gitignore
+/wear/wear.iml
+/mobile/mobile.iml
 .gradle
 /local.properties
 /.idea/workspace.xml
