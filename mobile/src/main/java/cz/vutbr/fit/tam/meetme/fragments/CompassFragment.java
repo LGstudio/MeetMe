@@ -16,11 +16,11 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
-import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 
@@ -39,20 +39,14 @@ public class CompassFragment extends MeetMeFragment{
     protected int selectedGroup = 0;
     protected int selectedPerson = 0;
 
-    private GroupColor colors;
-    private HashMap<Integer, Integer> groupColor;
-
-    private GroupInfo[] groupInfoItems;
-    private DeviceInfo[] deviceInfoItems;
     private ArrowView[] arrows;
+
+    protected ArrayList<DeviceInfo> devices;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
-
-        colors = new GroupColor();
-        groupColor = new HashMap<>();
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
@@ -63,7 +57,7 @@ public class CompassFragment extends MeetMeFragment{
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedGroup = position;
                 selectedPerson = 0;
-                addPersonsToSpinner();
+                //addPersonsToSpinner();
                 redrawCompass();
             }
 
@@ -85,14 +79,19 @@ public class CompassFragment extends MeetMeFragment{
             }
         });
 
-        addGroupsToSpinner();
+        //addGroupsToSpinner();
 
         return view;
     }
 
+    public void changeLayout(){
+        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
+        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
+    }
+
     /**
      * Adds Groups into spinner based on the ArrayList<GroupInfo> groups list
-     */
+
     public void addGroupsToSpinner(){
 
         GroupInfo allGroup = new GroupInfo();
@@ -118,11 +117,12 @@ public class CompassFragment extends MeetMeFragment{
             groupColor.put(id, colors.getNextColor());
         }
     }
+     */
 
     /**
      * Adds the connected Devices into spinner
      * based on the ArrayList<GroupInfo> groups list.
-     */
+
     public void addPersonsToSpinner(){
 
         DeviceInfo allDevices = new DeviceInfo();
@@ -165,6 +165,8 @@ public class CompassFragment extends MeetMeFragment{
         personSpinner.setSelection(selectedPerson);
     }
 
+     */
+
     public void createArrows(){
         //-------------------
 
@@ -192,7 +194,7 @@ public class CompassFragment extends MeetMeFragment{
      */
     public class GroupAdapter extends ArrayAdapter<GroupInfo> {
 
-        public GroupAdapter(Context ctx, int lineLayout, int txtViewResourceId, GroupInfo[] objects) {
+        public GroupAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<GroupInfo> objects) {
             super(ctx, lineLayout, txtViewResourceId, objects);
         }
 
@@ -203,13 +205,13 @@ public class CompassFragment extends MeetMeFragment{
 
 
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
-            groupSizeText.setText(groupInfoItems[position].toString());
+            groupSizeText.setText(data.groups.get(position).toString());
 
 
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
             icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(groupColor.get(groupInfoItems[position].id)), PorterDuff.Mode.MULTIPLY);
+            icon.setColorFilter(getResources().getColor(data.groupColor.get(data.groups.get(position).id)), PorterDuff.Mode.MULTIPLY);
             groupIcon.setImageDrawable(icon);
 
             return spinnerElement;
@@ -222,7 +224,7 @@ public class CompassFragment extends MeetMeFragment{
      */
     public class PersonAdapter extends ArrayAdapter<DeviceInfo> {
 
-        public PersonAdapter(Context ctx, int lineLayout, int txtViewResourceId, DeviceInfo[] objects) {
+        public PersonAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<DeviceInfo> objects) {
             super(ctx, lineLayout, txtViewResourceId, objects);
         }
 
@@ -233,7 +235,7 @@ public class CompassFragment extends MeetMeFragment{
 
 
             TextView personText = (TextView) spinnerElement.findViewById(R.id.list_person_item_text);
-            personText.setText(deviceInfoItems[position].toString());
+            personText.setText(devices.get(position).toString());
 
 /**
             ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);

@@ -12,33 +12,6 @@ public class GroupInfo {
     public String hash;
     public List<DeviceInfo> deviceInfoList;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getHash() {
-        return hash;
-    }
-
-    public void setHash(String hash) {
-        this.hash = hash;
-    }
-
-    public List<DeviceInfo> getDeviceInfoList() {
-        if(deviceInfoList==null)
-            deviceInfoList = new ArrayList<>();
-
-        return deviceInfoList;
-    }
-
-    public void setDeviceInfoList(List<DeviceInfo> deviceInfoList) {
-        this.deviceInfoList = deviceInfoList;
-    }
-
     public String toString(){
         if (id != 0)
             return String.valueOf(deviceInfoList.size());

@@ -12,6 +12,7 @@ import android.net.NetworkInfo;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
@@ -37,6 +38,7 @@ import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.fragments.*;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafterInterface;
+import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
@@ -48,12 +50,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static final String LOG_TAG = "MainActivity";
     public static final String GROUP_HASH="group_hash";
-    private ArrayList<GroupInfo> groups;
 
     private boolean isLoggedIn = true;
 
     private CompassFragment fragCompass;
     private MapViewFragment fragMap;
+
+    private AllConnectionData data;
+    private GroupUpdaterTask groupUpdaterTask;
 
     private ImageButton gpsStatus;
     private ImageButton netStatus;
@@ -69,8 +73,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.activity = this;
-
-        groups = new ArrayList<>();
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
@@ -177,8 +179,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 public void run() {
                     try {
                         GroupInfo gi = resourceCrafter.restGroupCreate(loc);
-                        MainActivity.this.groupHash = gi.getHash();
-                        Log.d(LOG_TAG, "created group:" + gi.getHash());
+                        MainActivity.this.groupHash = gi.hash;
+                        Log.d(LOG_TAG, "created group:" + gi.hash);
                     }
                     catch(InternalErrorException e){
                         Log.e(LOG_TAG, e.getMessage());
@@ -300,11 +302,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     private void showLoggedInLayout(){
+        data = new AllConnectionData(this);
         fragCompass = new CompassFragment();
-        fragCompass.putGroups(groups);
-
+        fragCompass.addData(data);
         fragMap = new MapViewFragment();
-        fragMap.putGroups(groups);
+        fragMap.addData(data);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Compass"));
@@ -334,60 +336,36 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
         });
 
-        /**
-         * DUMMY DATA -------------------------- !!!!!!!!!!!!
-         */
-        addDummyGroupData();
-    }
-
-    /**
-     * JUST SOME BULLSHIT FOR DUMMY DATA --------------------------------------
-     */
-
-    static final String AB = "ABCDEF GHIJKLM NOPQRS TUVWXYZ abcdefg hijklmno pqrst uvwxyz";
-    static Random rnd = new Random();
-
-    private void addDummyGroupData(){
-
-        for (int g = 0; g < 6; g++){
-            GroupInfo group = new GroupInfo();
-            group.hash = "Group_" + g;
-            group.id = g + 1;
-
-            int max = g%4 + 2;
-
-            ArrayList<DeviceInfo> deviceInfoList = new ArrayList<>();
-
-            for (int d = 0; d < max; d++){
-                DeviceInfo device = new DeviceInfo();
-                device.id = 10 * g + d;
-                device.name = randomString(10+d);
-                deviceInfoList.add(device);
-            }
-
-            group.setDeviceInfoList(deviceInfoList);
-            groups.add(group);
-        }
-
-    }
-
-    private String randomString( int len ){
-        StringBuilder sb = new StringBuilder( len );
-        for( int i = 0; i < len; i++ )
-            sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
-        return sb.toString();
     }
 
     public static MainActivity getActivity() {
         return activity;
     }
 
-    public void showGroupData(GroupInfo gi){
-        Toast.makeText(this.getApplicationContext(), gi.id+"", Toast.LENGTH_SHORT).show();
+    public void showGroupData(GroupInfo g){
+        groupUpdaterTask = new GroupUpdaterTask(g);
+        groupUpdaterTask.execute((Void) null);
     }
 
-    /**
-     * -------------------------------------------------------------------------
-     */
+    private class GroupUpdaterTask extends AsyncTask<Void,Void,Void>{
 
+        private GroupInfo group;
+
+        public GroupUpdaterTask(GroupInfo g){
+            group = g;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            data.updateGroupInfo(group);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            fragCompass.changeLayout();
+            Toast.makeText(getApplicationContext(), "groups: " + data.groupInfoItems.length, Toast.LENGTH_SHORT);
+        }
+    }
 }
