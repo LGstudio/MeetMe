@@ -27,6 +27,7 @@ public class GetGroupDataService extends Service {
     private String groupHash;
     private RequestCrafter resourceCrafter;
 
+    private boolean isBinded;
 
 
     @Override
@@ -41,6 +42,8 @@ public class GetGroupDataService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.isBinded = true;
+
         if(intent != null){
             this.groupHash = intent.getStringExtra(MainActivity.GROUP_HASH);
         }
@@ -59,7 +62,7 @@ public class GetGroupDataService extends Service {
 
 
     public class MyLocalBinder extends Binder {
-        GetGroupDataService getService() {
+        public GetGroupDataService getService() {
             return GetGroupDataService.this;
         }
     }
@@ -71,6 +74,11 @@ public class GetGroupDataService extends Service {
             mTimer.cancel();
         }
     }
+
+    public boolean isBinded() {
+        return isBinded;
+    }
+
     //////////////////////////////////////////
     // Nested classes
     /////////////////////////////////////////
@@ -94,7 +102,7 @@ public class GetGroupDataService extends Service {
 
                 GroupInfo gi = resourceCrafter.restGroupData(groupHash, loc);
                 sendMessageActivity(gi);
-   // Log.d(LOG_TAG, gi.getHash());
+                Log.d(LOG_TAG, gi.getId()+"");
 
             } catch (Exception e) { //you should always ultimately catch all exceptions in timer tasks.
                 Log.e("TimerTick", "Timer Tick Failed: "+ e.getMessage());
