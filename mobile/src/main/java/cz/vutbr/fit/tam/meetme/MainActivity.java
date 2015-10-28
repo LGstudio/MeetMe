@@ -272,8 +272,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             String str_latitude = intent.getStringExtra(context.getString(R.string.gps_latitude));
             String str_longitude = intent.getStringExtra(context.getString(R.string.gps_longitude));
 
-            double latitude  = Double.parseDouble(str_latitude);
-            double longitude = Double.parseDouble(str_longitude);
+            //double latitude  = Double.parseDouble(str_latitude);
+            //double longitude = Double.parseDouble(str_longitude);
         }
     };
 
