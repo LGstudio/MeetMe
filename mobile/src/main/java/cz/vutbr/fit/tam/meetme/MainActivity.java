@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private RequestCrafter resourceCrafter;
     private ServiceConnection mConnection = this;
+    private GetGroupDataService.MyLocalBinder binder;
     private String groupHash;
     private static MainActivity activity;
 
@@ -198,7 +199,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onStop(){
         Log.d("GetGroupDataService", "onStop");
         super.onStop();
-        unbindService(mConnection);
+
+        if(this.binder!=null && this.binder.getService().isBinded())
+            unbindService(mConnection);
     }
 
 
@@ -229,7 +232,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-
+            Log.d(LOG_TAG, "service binded!");
+            MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
     }
 
     @Override
