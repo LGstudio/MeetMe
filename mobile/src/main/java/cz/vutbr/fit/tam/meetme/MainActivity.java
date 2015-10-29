@@ -225,27 +225,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }).start();
         }
-        else{/**
-            //create group
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        GroupInfo gi = resourceCrafter.restGroupCreate(loc);
-                        MainActivity.this.groupHash = gi.hash;
-                        Log.d(LOG_TAG, "created group:" + gi.hash);
-                    }
-                    catch(InternalErrorException e){
-                        Log.e(LOG_TAG, e.getMessage());
-                    }
-
-                    Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
-                    i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
-                    bindService(i, mConnection, Context.BIND_AUTO_CREATE);
-                }
-            }).start(); */
-        }
-
-
     }
 
 
@@ -415,6 +394,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     public static MainActivity getActivity() {
         return activity;
+    }
+
+    public RequestCrafter getResourceCrafter() {
+        return resourceCrafter;
     }
 
     public void showGroupData(GroupInfo g){

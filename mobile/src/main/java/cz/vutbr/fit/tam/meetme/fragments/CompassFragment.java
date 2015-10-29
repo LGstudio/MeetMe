@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +21,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
+import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
@@ -28,8 +31,8 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 
 /**
  * @author Gebriel Lehocky
- *
- * Fragment that shows the compass.
+ *         <p/>
+ *         Fragment that shows the compass.
  */
 public class CompassFragment extends MeetMeFragment implements View.OnClickListener {
 
@@ -94,7 +97,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         return view;
     }
 
-    public void changeLayout(){
+    public void changeLayout() {
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
         groupSpinner.setSelection(selectedGroup);
         addDevicesToSpinner();
@@ -106,7 +109,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Adds the connected Devices into spinner
      * based on the ArrayList<GroupInfo> groups list.
      */
-    public void addDevicesToSpinner(){
+    public void addDevicesToSpinner() {
 
         devices = new ArrayList<>();
         DeviceInfo all = new DeviceInfo();
@@ -114,22 +117,21 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         all.name = getString(R.string.dropdown_all_contact);
         devices.add(all);
 
-        if (selectedGroup == 0){
-            for (GroupInfo g: data.groups){
-                for (DeviceInfo d: g.deviceInfoList){
+        if (selectedGroup == 0) {
+            for (GroupInfo g : data.groups) {
+                for (DeviceInfo d : g.deviceInfoList) {
                     devices.add(d);
                 }
             }
-        }
-        else {
-            for (DeviceInfo d: data.groups.get(selectedGroup).deviceInfoList){
+        } else {
+            for (DeviceInfo d : data.groups.get(selectedGroup).deviceInfoList) {
                 devices.add(d);
             }
         }
     }
 
 
-    public void createArrows(){
+    public void createArrows() {
         //-------------------
 
         ArrowView a = new ArrowView(getContext());
@@ -137,7 +139,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
 
         RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
         r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        r.setDuration((long) 2*1500);
+        r.setDuration((long) 2 * 1500);
         r.setRepeatCount(0);
         a.startAnimation(r);
 
@@ -148,13 +150,13 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Redraws the compass area based on the ArrayList<GroupInfo> groups list.
      * TODO: AsyncTask to refresh based on data
      */
-    public void redrawCompass(){
-        
+    public void redrawCompass() {
+
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.button_add:
                 createNewGroup();
                 break;
@@ -167,38 +169,28 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     /**
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
-    private void createNewGroup(){
+    private void createNewGroup() {
+        GroupInfo gi;
 
-        String url = "http://MeetMe.LOL"; // URL to send
-        String txt = "";
+        final Location loc = new Location("testLocation");
 
-        if(selectedGroup == 0){
-
-            // TODO:  create new group then share url
-
-            txt = getString(R.string.share_new_msg);
-        }
-        else {
-
-            // TODO: share existing group url
-
-            txt = getString(R.string.share_new_msg);
+        if (selectedGroup == 0) {
+            gi = null;
+        } else {
+            gi = data.groups.get(selectedGroup);
         }
 
-        Intent I = new Intent(Intent.ACTION_SEND);
-        I.setType("text/plain");
-        I.putExtra(android.content.Intent.EXTRA_TEXT, url);
-        startActivity(Intent.createChooser(I,txt));
+        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), MainActivity.getActivity().getResourceCrafter(), loc);
+        gs.execute();
     }
 
     /**
      * Leaves the appropriate group based on the group spinners selection
      */
-    private void leaveGroup(){
-        if (selectedGroup == 0){
+    private void leaveGroup() {
+        if (selectedGroup == 0) {
             // TODO: Leave all groups
-        }
-        else {
+        } else {
             // TODO: Leave data.groups.get(selectedGroup)
         }
     }
@@ -252,12 +244,12 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             personText.setText(devices.get(position).toString());
 
 /**
-            ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
-            Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
-            icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
-            personIcon.setImageDrawable(icon);
-*/
+ ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
+ Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
+ icon = icon.mutate();
+ icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
+ personIcon.setImageDrawable(icon);
+ */
             return spinnerElement;
         }
 

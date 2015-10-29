@@ -23,8 +23,8 @@
 
     <string name="pref_last_lon">cz.vutbr.fit.tam.meetme.lastknownlon</string>
     <string name="pref_last_lat">cz.vutbr.fit.tam.meetme.lastknownlat</string>
-    <string name="share_new_msg">Invite into new group ...</string>
-    <string name="share_exist_msg">Invite into group ...</string>
+
+    <string name="share_link">http://meetme.poul.cz/group/</string>
 
     <string name="network_dialog_title">Internet connection is disabled.</string>
     <string name="network_dialog_text">Do you want to turn it on?</string>
