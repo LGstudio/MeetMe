@@ -197,11 +197,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onStop(){
-        Log.d("GetGroupDataService", "onStop");
+        Log.d(LOG_TAG, "onStop");
         super.onStop();
 
-        if(this.binder!=null && this.binder.getService().isBinded())
+        if(this.binder!=null && this.binder.getService().isBinded()) {
+            Log.d(LOG_TAG, "service UNbinded!");
             unbindService(mConnection);
+        }
     }
 
 
@@ -256,14 +258,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
+          /*  String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
             String str_y = intent.getStringExtra(context.getString(R.string.rotation_y));
             String str_z = intent.getStringExtra(context.getString(R.string.rotation_z));
 
             float x = Float.parseFloat(str_x);
             float y = Float.parseFloat(str_y);
             float z = Float.parseFloat(str_z);
-
+*/
             // TODO: angle (arrow rotation) = from.bearingTo(to) - x (azimuth)
             // TODO: distanceTo
         }
