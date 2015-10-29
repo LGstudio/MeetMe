@@ -80,6 +80,8 @@ public class CompassFragment extends MeetMeFragment{
 
         changeLayout();
 
+        createArrows();
+
         return view;
     }
 

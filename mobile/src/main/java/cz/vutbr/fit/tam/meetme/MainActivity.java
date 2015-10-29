@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }).start();
         }
-        else{
+        else{/**
             //create group
             new Thread(new Runnable() {
                 public void run() {
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
                     bindService(i, mConnection, Context.BIND_AUTO_CREATE);
                 }
-            }).start();
+            }).start(); */
         }
 
 
