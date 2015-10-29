@@ -1,6 +1,7 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import cz.vutbr.fit.tam.meetme.R;
+import cz.vutbr.fit.tam.meetme.gui.SquareButton;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
@@ -28,10 +31,12 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  *
  * Fragment that shows the compass.
  */
-public class CompassFragment extends MeetMeFragment{
+public class CompassFragment extends MeetMeFragment implements View.OnClickListener {
 
     private View view;
 
+    private SquareButton addButton;
+    private Button leaveButton;
     private RelativeLayout arrowArea;
     private Spinner groupSpinner;
     private Spinner personSpinner;
@@ -50,6 +55,11 @@ public class CompassFragment extends MeetMeFragment{
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
         arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
+        addButton = (SquareButton) view.findViewById(R.id.button_add);
+        leaveButton = (Button) view.findViewById(R.id.button_exit);
+
+        addButton.setOnClickListener(this);
+        leaveButton.setOnClickListener(this);
 
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -79,7 +89,6 @@ public class CompassFragment extends MeetMeFragment{
         });
 
         changeLayout();
-
         createArrows();
 
         return view;
@@ -87,39 +96,11 @@ public class CompassFragment extends MeetMeFragment{
 
     public void changeLayout(){
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
+        groupSpinner.setSelection(selectedGroup);
         addDevicesToSpinner();
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
+        if (selectedPerson < devices.size()) personSpinner.setSelection(selectedPerson);
     }
-
-    /**
-     * Adds Groups into spinner based on the ArrayList<GroupInfo> groups list
-
-    public void addGroupsToSpinner(){
-
-        GroupInfo allGroup = new GroupInfo();
-        allGroup.hash = getString(R.string.dropdown_all_group);
-        allGroup.id = 0;
-        groupColor.put(0, R.color.flat_brightness_difference);
-
-        groupInfoItems = new GroupInfo[groups.size()+1];
-        groupInfoItems[0] = allGroup;
-        for (int i = 0; i < groups.size(); i++){
-            groupInfoItems[i+1] = groups.get(i);
-            addGroupColor(groupInfoItems[i+1].id);
-        }
-
-        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groupInfoItems));
-
-        groupSpinner.setSelection(selectedGroup);
-        if(selectedGroup == 0) addPersonsToSpinner();
-    }
-
-    private void addGroupColor(int id){
-        if (!groupColor.containsKey(id)){
-            groupColor.put(id, colors.getNextColor());
-        }
-    }
-     */
 
     /**
      * Adds the connected Devices into spinner
@@ -165,9 +146,61 @@ public class CompassFragment extends MeetMeFragment{
 
     /**
      * Redraws the compass area based on the ArrayList<GroupInfo> groups list.
+     * TODO: AsyncTask to refresh based on data
      */
     public void redrawCompass(){
         
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.button_add:
+                createNewGroup();
+                break;
+            case R.id.button_exit:
+                leaveGroup();
+                break;
+        }
+    }
+
+    /**
+     * Creates new group by sending request to server, then ask the user to share the link with someone
+     */
+    private void createNewGroup(){
+
+        String url = "http://MeetMe.LOL"; // URL to send
+        String txt = "";
+
+        if(selectedGroup == 0){
+
+            // TODO:  create new group then share url
+
+            txt = getString(R.string.share_new_msg);
+        }
+        else {
+
+            // TODO: share existing group url
+
+            txt = getString(R.string.share_new_msg);
+        }
+
+        Intent I = new Intent(Intent.ACTION_SEND);
+        I.setType("text/plain");
+        I.putExtra(android.content.Intent.EXTRA_TEXT, url);
+        startActivity(Intent.createChooser(I,txt));
+    }
+
+    /**
+     * Leaves the appropriate group based on the group spinners selection
+     */
+    private void leaveGroup(){
+        if (selectedGroup == 0){
+            // TODO: Leave all groups
+        }
+        else {
+            // TODO: Leave data.groups.get(selectedGroup)
+        }
     }
 
     /**

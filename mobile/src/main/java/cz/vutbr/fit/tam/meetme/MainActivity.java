@@ -1,11 +1,11 @@
 package cz.vutbr.fit.tam.meetme;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,9 +14,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -30,17 +27,12 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.fragments.*;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
-import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafterInterface;
 import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
-import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
-import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
 import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
@@ -66,13 +58,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ServiceConnection mConnection = this;
     private GetGroupDataService.MyLocalBinder binder;
     private String groupHash;
+
     private static MainActivity activity;
+    private static SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.activity = this;
+
+        prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
@@ -252,6 +248,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
+        prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
     }
 
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
@@ -275,11 +274,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String str_latitude = intent.getStringExtra(context.getString(R.string.gps_latitude));
-            String str_longitude = intent.getStringExtra(context.getString(R.string.gps_longitude));
+            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
+            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
-            //double latitude  = Double.parseDouble(str_latitude);
-            //double longitude = Double.parseDouble(str_longitude);
+
         }
     };
 
@@ -303,6 +301,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private void showLoggedInLayout(){
         data = new AllConnectionData(this);
+
+        data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
+        data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
+
         fragCompass = new CompassFragment();
         fragCompass.addData(data);
         fragMap = new MapViewFragment();

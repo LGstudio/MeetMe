@@ -9,6 +9,9 @@ public class DeviceInfo {
     public Double latitude;
     public Double longitude;
 
+    public float bearing;
+    public float distance;
+
     @Override
     public String toString(){
         return "(" + id + ")";
