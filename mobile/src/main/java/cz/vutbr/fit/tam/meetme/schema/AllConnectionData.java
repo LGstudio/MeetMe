@@ -48,7 +48,7 @@ public class AllConnectionData {
 
         boolean groupExists = false;
         for (GroupInfo g: groups){
-            if (g.id == newGroup.id){
+            if (g.id.equals(newGroup.id)){
                 groupExists = true;
                 g.deviceInfoList = newGroup.deviceInfoList;
                 break;

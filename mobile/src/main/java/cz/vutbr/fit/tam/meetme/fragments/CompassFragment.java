@@ -17,7 +17,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
