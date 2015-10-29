@@ -10,6 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -26,6 +27,7 @@ public class GPSLocationService extends Service implements
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+    private LocationAvailability mLocationAvailability;
     private Location mLastLocation;
     private boolean mRequestingLocationUpdates;
 
@@ -78,7 +80,8 @@ public class GPSLocationService extends Service implements
             mGoogleApiClient.connect();
         }
 
-        sendLocation();
+        mLocationAvailability = LocationServices.FusedLocationApi.getLocationAvailability(mGoogleApiClient);
+
         return START_STICKY;
     }
 
@@ -133,26 +136,13 @@ public class GPSLocationService extends Service implements
         if (mLastLocation != null) {
             double latitude = mLastLocation.getLatitude();
             double longitude = mLastLocation.getLongitude();
-
-            // TODO ???
-            // rounding ( last - new < threshold ) { do not update }
-            // double delta_latitude  = Math.abs(last_latitude  - latitude);
-            // double delta_longitude = Math.abs(last_longitude - longitude);
-            // double delta_distance = Math.pow(delta_latitude, 2) + Math.pow(delta_longitude, 2);
-            // if (delta_distance < PRECISION_THRESHOLD) { return; }
-            //last_latitude  = latitude;
-            //last_longitude = longitude;
-
+            
             Context context = getApplicationContext();
 
             Intent intent = new Intent(context.getString(R.string.gps_intent_filter));
             intent.putExtra(context.getString(R.string.gps_latitude), Double.toString(latitude));
             intent.putExtra(context.getString(R.string.gps_longitude), Double.toString(longitude));
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-
-        }
-        else {
-            // TODO: send error code > 0
         }
     }
 }

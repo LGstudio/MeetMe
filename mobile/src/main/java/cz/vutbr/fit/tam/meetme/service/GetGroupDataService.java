@@ -102,7 +102,7 @@ public class GetGroupDataService extends Service {
 
                 GroupInfo gi = resourceCrafter.restGroupData(groupHash, loc);
                 sendMessageActivity(gi);
-                Log.d(LOG_TAG, gi.getId()+"");
+                Log.d(LOG_TAG, gi.id+"");
 
             } catch (Exception e) { //you should always ultimately catch all exceptions in timer tasks.
                 Log.e("TimerTick", "Timer Tick Failed: "+ e.getMessage());

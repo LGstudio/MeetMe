@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 
 import java.util.ArrayList;
 
+import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 
 /**
@@ -14,10 +15,10 @@ import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
  */
 public class MeetMeFragment extends Fragment {
 
-    protected ArrayList<GroupInfo> groups;
+    protected AllConnectionData data;
 
-    public void putGroups(ArrayList<GroupInfo> g){
-        groups = g;
+    public void addData(AllConnectionData d){
+        data = d;
     }
 
 }

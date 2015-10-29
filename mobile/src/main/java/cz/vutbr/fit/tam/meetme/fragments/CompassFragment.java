@@ -1,6 +1,7 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,16 +12,17 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import cz.vutbr.fit.tam.meetme.R;
+import cz.vutbr.fit.tam.meetme.gui.SquareButton;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
-import cz.vutbr.fit.tam.meetme.schema.GroupColor;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 
@@ -29,41 +31,42 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  *
  * Fragment that shows the compass.
  */
-public class CompassFragment extends MeetMeFragment{
+public class CompassFragment extends MeetMeFragment implements View.OnClickListener {
 
     private View view;
 
+    private SquareButton addButton;
+    private Button leaveButton;
     private RelativeLayout arrowArea;
     private Spinner groupSpinner;
     private Spinner personSpinner;
     protected int selectedGroup = 0;
     protected int selectedPerson = 0;
 
-    private GroupColor colors;
-    private HashMap<Integer, Integer> groupColor;
-
-    private GroupInfo[] groupInfoItems;
-    private DeviceInfo[] deviceInfoItems;
     private ArrowView[] arrows;
+
+    protected ArrayList<DeviceInfo> devices;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
 
-        colors = new GroupColor();
-        groupColor = new HashMap<>();
-
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
         arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
+        addButton = (SquareButton) view.findViewById(R.id.button_add);
+        leaveButton = (Button) view.findViewById(R.id.button_exit);
+
+        addButton.setOnClickListener(this);
+        leaveButton.setOnClickListener(this);
 
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedGroup = position;
                 selectedPerson = 0;
-                addPersonsToSpinner();
+                addDevicesToSpinner();
                 redrawCompass();
             }
 
@@ -85,85 +88,46 @@ public class CompassFragment extends MeetMeFragment{
             }
         });
 
-        addGroupsToSpinner();
+        changeLayout();
+        createArrows();
 
         return view;
     }
 
-    /**
-     * Adds Groups into spinner based on the ArrayList<GroupInfo> groups list
-     */
-    public void addGroupsToSpinner(){
-
-        GroupInfo allGroup = new GroupInfo();
-        allGroup.hash = getString(R.string.dropdown_all_group);
-        allGroup.id = 0;
-        groupColor.put(0, R.color.flat_brightness_difference);
-
-        groupInfoItems = new GroupInfo[groups.size()+1];
-        groupInfoItems[0] = allGroup;
-        for (int i = 0; i < groups.size(); i++){
-            groupInfoItems[i+1] = groups.get(i);
-            addGroupColor(groupInfoItems[i+1].id);
-        }
-
-        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groupInfoItems));
-
+    public void changeLayout(){
+        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
         groupSpinner.setSelection(selectedGroup);
-        if(selectedGroup == 0) addPersonsToSpinner();
-    }
-
-    private void addGroupColor(int id){
-        if (!groupColor.containsKey(id)){
-            groupColor.put(id, colors.getNextColor());
-        }
+        addDevicesToSpinner();
+        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
+        if (selectedPerson < devices.size()) personSpinner.setSelection(selectedPerson);
     }
 
     /**
      * Adds the connected Devices into spinner
      * based on the ArrayList<GroupInfo> groups list.
      */
-    public void addPersonsToSpinner(){
+    public void addDevicesToSpinner(){
 
-        DeviceInfo allDevices = new DeviceInfo();
-        allDevices.name = getString(R.string.dropdown_all_contact);
-
-
-        int deviceCount = 1;
-        int i = 1;
+        devices = new ArrayList<>();
+        DeviceInfo all = new DeviceInfo();
+        all.id = 0;
+        all.name = getString(R.string.dropdown_all_contact);
+        devices.add(all);
 
         if (selectedGroup == 0){
-            //allDevices.color = R.color.flat_brightness_difference;
-
-            for (GroupInfo g: groups) deviceCount += g.deviceInfoList.size();
-
-            deviceInfoItems = new DeviceInfo[deviceCount];
-            deviceInfoItems[0] = allDevices;
-
-            for (GroupInfo g: groups){
+            for (GroupInfo g: data.groups){
                 for (DeviceInfo d: g.deviceInfoList){
-                    deviceInfoItems[i] = d;
-                    i++;
+                    devices.add(d);
                 }
             }
         }
         else {
-            //allDevices.color = groups.get(selectedGroup-1).groupColor;
-
-            deviceCount += groups.get(selectedGroup-1).deviceInfoList.size();
-
-            deviceInfoItems = new DeviceInfo[deviceCount];
-            deviceInfoItems[0] = allDevices;
-            for (DeviceInfo d: groups.get(selectedGroup-1).deviceInfoList){
-                deviceInfoItems[i] = d;
-                i++;
+            for (DeviceInfo d: data.groups.get(selectedGroup).deviceInfoList){
+                devices.add(d);
             }
         }
-
-        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, deviceInfoItems));
-
-        personSpinner.setSelection(selectedPerson);
     }
+
 
     public void createArrows(){
         //-------------------
@@ -182,9 +146,61 @@ public class CompassFragment extends MeetMeFragment{
 
     /**
      * Redraws the compass area based on the ArrayList<GroupInfo> groups list.
+     * TODO: AsyncTask to refresh based on data
      */
     public void redrawCompass(){
         
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.button_add:
+                createNewGroup();
+                break;
+            case R.id.button_exit:
+                leaveGroup();
+                break;
+        }
+    }
+
+    /**
+     * Creates new group by sending request to server, then ask the user to share the link with someone
+     */
+    private void createNewGroup(){
+
+        String url = "http://MeetMe.LOL"; // URL to send
+        String txt = "";
+
+        if(selectedGroup == 0){
+
+            // TODO:  create new group then share url
+
+            txt = getString(R.string.share_new_msg);
+        }
+        else {
+
+            // TODO: share existing group url
+
+            txt = getString(R.string.share_new_msg);
+        }
+
+        Intent I = new Intent(Intent.ACTION_SEND);
+        I.setType("text/plain");
+        I.putExtra(android.content.Intent.EXTRA_TEXT, url);
+        startActivity(Intent.createChooser(I,txt));
+    }
+
+    /**
+     * Leaves the appropriate group based on the group spinners selection
+     */
+    private void leaveGroup(){
+        if (selectedGroup == 0){
+            // TODO: Leave all groups
+        }
+        else {
+            // TODO: Leave data.groups.get(selectedGroup)
+        }
     }
 
     /**
@@ -192,7 +208,7 @@ public class CompassFragment extends MeetMeFragment{
      */
     public class GroupAdapter extends ArrayAdapter<GroupInfo> {
 
-        public GroupAdapter(Context ctx, int lineLayout, int txtViewResourceId, GroupInfo[] objects) {
+        public GroupAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<GroupInfo> objects) {
             super(ctx, lineLayout, txtViewResourceId, objects);
         }
 
@@ -203,13 +219,13 @@ public class CompassFragment extends MeetMeFragment{
 
 
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
-            groupSizeText.setText(groupInfoItems[position].toString());
+            groupSizeText.setText(data.groups.get(position).toString());
 
 
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
             icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(groupColor.get(groupInfoItems[position].id)), PorterDuff.Mode.MULTIPLY);
+            icon.setColorFilter(getResources().getColor(data.groupColor.get(data.groups.get(position).id)), PorterDuff.Mode.MULTIPLY);
             groupIcon.setImageDrawable(icon);
 
             return spinnerElement;
@@ -222,7 +238,7 @@ public class CompassFragment extends MeetMeFragment{
      */
     public class PersonAdapter extends ArrayAdapter<DeviceInfo> {
 
-        public PersonAdapter(Context ctx, int lineLayout, int txtViewResourceId, DeviceInfo[] objects) {
+        public PersonAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<DeviceInfo> objects) {
             super(ctx, lineLayout, txtViewResourceId, objects);
         }
 
@@ -233,7 +249,7 @@ public class CompassFragment extends MeetMeFragment{
 
 
             TextView personText = (TextView) spinnerElement.findViewById(R.id.list_person_item_text);
-            personText.setText(deviceInfoItems[position].toString());
+            personText.setText(devices.get(position).toString());
 
 /**
             ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);

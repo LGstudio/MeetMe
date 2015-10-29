@@ -45,12 +45,10 @@ public class MapViewFragment extends MeetMeFragment {
 
         googleMap = mMapView.getMap();
         // latitude and longitude
-        double latitude = 17.385044;
-        double longitude = 78.486671;
 
         // create marker
         MarkerOptions marker = new MarkerOptions().position(
-                new LatLng(latitude, longitude)).title("Hello Maps");
+                new LatLng(data.myLatitude, data.myLongitude)).title(getString(R.string.map_me));
 
         // Changing marker icon
         marker.icon(BitmapDescriptorFactory
@@ -58,10 +56,8 @@ public class MapViewFragment extends MeetMeFragment {
 
         // adding marker
         googleMap.addMarker(marker);
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(17.385044, 78.486671)).zoom(12).build();
-        googleMap.animateCamera(CameraUpdateFactory
-                .newCameraPosition(cameraPosition));
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(data.myLatitude, data.myLongitude)).zoom(12).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
         // Perform any camera updates here
         return v;

@@ -1,21 +1,23 @@
 package cz.vutbr.fit.tam.meetme;
 
-import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -23,22 +25,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.fragments.*;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
-import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafterInterface;
-import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
-import cz.vutbr.fit.tam.meetme.schema.GroupColor;
+import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
 import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
@@ -48,12 +47,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static final String LOG_TAG = "MainActivity";
     public static final String GROUP_HASH="group_hash";
-    private ArrayList<GroupInfo> groups;
 
     private boolean isLoggedIn = true;
 
     private CompassFragment fragCompass;
     private MapViewFragment fragMap;
+
+    private AllConnectionData data;
+    private GroupUpdaterTask groupUpdaterTask;
 
     private ImageButton gpsStatus;
     private ImageButton netStatus;
@@ -62,7 +63,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private ServiceConnection mConnection = this;
     private GetGroupDataService.MyLocalBinder binder;
     private String groupHash;
+
     private static MainActivity activity;
+    private static SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,19 +73,67 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setContentView(R.layout.activity_main);
         this.activity = this;
 
-        groups = new ArrayList<>();
+        prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
 
+        netStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.openNetworkSettings();
+            }
+        });
+
+        gpsStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.openLocationSettings();
+            }
+        });
+
         if (!isNetworkAvailable()) {
-            // TODO: connect to network
-            Log.d("DEBUG", "network disabled");
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            alertDialogBuilder.setTitle(R.string.network_dialog_title);
+
+            alertDialogBuilder.setMessage(R.string.network_dialog_text)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.network_dialog_positive,new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            MainActivity.this.openNetworkSettings();
+                        }
+                    })
+                    .setNegativeButton(R.string.network_dialog_negative,new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            dialog.cancel();
+                            //MainActivity.this.finish();
+                        }
+                    });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
 
         if (!isLocationEnabled()) {
-            // TODO: enable location
-            Log.d("DEBUG", "location disabled");
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            alertDialogBuilder.setTitle(R.string.location_dialog_title);
+
+            alertDialogBuilder.setMessage(R.string.location_dialog_text)
+                    .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            MainActivity.this.openLocationSettings();
+                        }
+                    })
+                    .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
 
         resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
@@ -95,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         startService(new Intent(this, SensorService.class));
-
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
         );
@@ -103,13 +153,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (checkGooglePlayServices()) {
 
             startService(new Intent(this, GPSLocationService.class));
-
             LocalBroadcastManager.getInstance(this).registerReceiver(
                     gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
             );
-        }
-        else {
-            // TODO: error
         }
     }
 
@@ -136,6 +182,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         return (gps && net);
+    }
+
+    private void openNetworkSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0);
+    }
+
+    private void openLocationSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
     }
 
     @Override
@@ -171,14 +225,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }).start();
         }
-        else{
+        else{/**
             //create group
             new Thread(new Runnable() {
                 public void run() {
                     try {
                         GroupInfo gi = resourceCrafter.restGroupCreate(loc);
-                        MainActivity.this.groupHash = gi.getHash();
-                        Log.d(LOG_TAG, "created group:" + gi.getHash());
+                        MainActivity.this.groupHash = gi.hash;
+                        Log.d(LOG_TAG, "created group:" + gi.hash);
                     }
                     catch(InternalErrorException e){
                         Log.e(LOG_TAG, e.getMessage());
@@ -188,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
                     bindService(i, mConnection, Context.BIND_AUTO_CREATE);
                 }
-            }).start();
+            }).start(); */
         }
 
 
@@ -252,6 +306,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
+        prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
     }
 
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
@@ -275,11 +332,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String str_latitude = intent.getStringExtra(context.getString(R.string.gps_latitude));
-            String str_longitude = intent.getStringExtra(context.getString(R.string.gps_longitude));
+            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
+            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
-            //double latitude  = Double.parseDouble(str_latitude);
-            //double longitude = Double.parseDouble(str_longitude);
+
         }
     };
 
@@ -289,10 +345,25 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (resultCode != ConnectionResult.SUCCESS) {
 
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                // TODO: show error dialog
+                Dialog err = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 1000);
+
+                if (err != null)
+                    err.show();
             }
             else {
-                // TODO: error (not supported device)
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setTitle(R.string.googleplay_dialog_title);
+
+                alertDialogBuilder.setMessage(R.string.googleplay_dialog_text)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.googleplay_dialog_positive, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                MainActivity.this.finish();
+                            }
+                        });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
 
             return false;
@@ -302,11 +373,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     private void showLoggedInLayout(){
-        fragCompass = new CompassFragment();
-        fragCompass.putGroups(groups);
+        data = new AllConnectionData(this);
 
+        data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
+        data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
+
+        fragCompass = new CompassFragment();
+        fragCompass.addData(data);
         fragMap = new MapViewFragment();
-        fragMap.putGroups(groups);
+        fragMap.addData(data);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Compass"));
@@ -336,60 +411,36 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
         });
 
-        /**
-         * DUMMY DATA -------------------------- !!!!!!!!!!!!
-         */
-        addDummyGroupData();
-    }
-
-    /**
-     * JUST SOME BULLSHIT FOR DUMMY DATA --------------------------------------
-     */
-
-    static final String AB = "ABCDEF GHIJKLM NOPQRS TUVWXYZ abcdefg hijklmno pqrst uvwxyz";
-    static Random rnd = new Random();
-
-    private void addDummyGroupData(){
-
-        for (int g = 0; g < 6; g++){
-            GroupInfo group = new GroupInfo();
-            group.hash = "Group_" + g;
-            group.id = g + 1;
-
-            int max = g%4 + 2;
-
-            ArrayList<DeviceInfo> deviceInfoList = new ArrayList<>();
-
-            for (int d = 0; d < max; d++){
-                DeviceInfo device = new DeviceInfo();
-                device.id = 10 * g + d;
-                device.name = randomString(10+d);
-                deviceInfoList.add(device);
-            }
-
-            group.setDeviceInfoList(deviceInfoList);
-            groups.add(group);
-        }
-
-    }
-
-    private String randomString( int len ){
-        StringBuilder sb = new StringBuilder( len );
-        for( int i = 0; i < len; i++ )
-            sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
-        return sb.toString();
     }
 
     public static MainActivity getActivity() {
         return activity;
     }
 
-    public void showGroupData(GroupInfo gi){
-        Toast.makeText(this.getApplicationContext(), gi.id+"", Toast.LENGTH_SHORT).show();
+    public void showGroupData(GroupInfo g){
+        Toast.makeText(this.getApplicationContext(),"group: " + g.id,Toast.LENGTH_SHORT);
+        groupUpdaterTask = new GroupUpdaterTask(g);
+        groupUpdaterTask.execute((Void) null);
     }
 
-    /**
-     * -------------------------------------------------------------------------
-     */
+    private class GroupUpdaterTask extends AsyncTask<Void,Void,Void>{
 
+        private GroupInfo group;
+
+        public GroupUpdaterTask(GroupInfo g){
+            group = g;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            data.updateGroupInfo(group);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            fragCompass.changeLayout();
+        }
+    }
 }
