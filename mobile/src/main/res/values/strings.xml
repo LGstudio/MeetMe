@@ -26,4 +26,17 @@
     <string name="share_new_msg">Invite into new group ...</string>
     <string name="share_exist_msg">Invite into group ...</string>
 
+    <string name="network_dialog_title">Internet connection is disabled.</string>
+    <string name="network_dialog_text">Do you want to turn it on?</string>
+    <string name="network_dialog_positive">Yes</string>
+    <string name="network_dialog_negative">No</string>
+
+    <string name="location_dialog_title">Location service is disabled.</string>
+    <string name="location_dialog_text">Do you want to turn it on?</string>
+    <string name="location_dialog_positive">Yes</string>
+    <string name="location_dialog_negative">No</string>
+
+    <string name="googleplay_dialog_title">This device is not supported!</string>
+    <string name="googleplay_dialog_text">Google Play Services</string>
+    <string name="googleplay_dialog_positive">OK</string>
 </resources>

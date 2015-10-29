@@ -33,8 +33,8 @@ public class SensorService extends Service implements SensorEventListener {
         magnetometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         if (accelerometer == null || magnetometer == null) {
-
-            // TODO: device not supported
+            stopSelf();
+            return START_NOT_STICKY;
         }
 
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);

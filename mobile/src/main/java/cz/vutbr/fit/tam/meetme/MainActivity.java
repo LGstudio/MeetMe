@@ -1,8 +1,11 @@
 package cz.vutbr.fit.tam.meetme;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -14,6 +17,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -73,14 +78,62 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
 
+        netStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.openNetworkSettings();
+            }
+        });
+
+        gpsStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.openLocationSettings();
+            }
+        });
+
         if (!isNetworkAvailable()) {
-            // TODO: connect to network
-            Log.d("DEBUG", "network disabled");
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            alertDialogBuilder.setTitle(R.string.network_dialog_title);
+
+            alertDialogBuilder.setMessage(R.string.network_dialog_text)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.network_dialog_positive,new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            MainActivity.this.openNetworkSettings();
+                        }
+                    })
+                    .setNegativeButton(R.string.network_dialog_negative,new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            dialog.cancel();
+                            //MainActivity.this.finish();
+                        }
+                    });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
 
         if (!isLocationEnabled()) {
-            // TODO: enable location
-            Log.d("DEBUG", "location disabled");
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            alertDialogBuilder.setTitle(R.string.location_dialog_title);
+
+            alertDialogBuilder.setMessage(R.string.location_dialog_text)
+                    .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            MainActivity.this.openLocationSettings();
+                        }
+                    })
+                    .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
 
         resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
@@ -93,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         startService(new Intent(this, SensorService.class));
-
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
         );
@@ -101,13 +153,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (checkGooglePlayServices()) {
 
             startService(new Intent(this, GPSLocationService.class));
-
             LocalBroadcastManager.getInstance(this).registerReceiver(
                     gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
             );
-        }
-        else {
-            // TODO: error
         }
     }
 
@@ -134,6 +182,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         return (gps && net);
+    }
+
+    private void openNetworkSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0);
+    }
+
+    private void openLocationSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
     }
 
     @Override
@@ -287,10 +343,25 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (resultCode != ConnectionResult.SUCCESS) {
 
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                // TODO: show error dialog
+                Dialog err = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 1000);
+
+                if (err != null)
+                    err.show();
             }
             else {
-                // TODO: error (not supported device)
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setTitle(R.string.googleplay_dialog_title);
+
+                alertDialogBuilder.setMessage(R.string.googleplay_dialog_text)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.googleplay_dialog_positive, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                MainActivity.this.finish();
+                            }
+                        });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
 
             return false;
