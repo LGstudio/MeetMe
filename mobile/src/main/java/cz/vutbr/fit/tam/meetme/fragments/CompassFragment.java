@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +25,9 @@ import java.util.ArrayList;
 
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
-import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
+import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
+import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
@@ -170,15 +173,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
     private void createNewGroup() {
-        GroupInfo gi;
-
         final Location loc = new Location("testLocation");
-
-        if (selectedGroup == 0) {
-            gi = null;
-        } else {
-            gi = data.groups.get(selectedGroup);
-        }
 
         GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), MainActivity.getActivity().getResourceCrafter(), loc);
         gs.execute();
@@ -251,6 +246,56 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
  personIcon.setImageDrawable(icon);
  */
             return spinnerElement;
+        }
+
+    }
+
+    public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
+        private final String TAG="GroupShareAsyncTask";
+
+        private RequestCrafter resourceCrafter;
+        private Context context;
+        private Location loc;
+        private GroupInfo group = null;
+        private String shareMsg;
+
+        public GroupShareAsyncTask(Context context, RequestCrafter rc, Location loc){
+            this.resourceCrafter = rc;
+            this.context = context.getApplicationContext();
+            this.loc = loc;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            if (selectedGroup == 0) {
+                try {
+                    this.group = this.resourceCrafter.restGroupCreate(this.loc);
+                    data.updateGroupInfo(this.group);
+                    this.shareMsg = getString(R.string.share_msg_new);
+                } catch (InternalErrorException e) {
+                    Log.d(TAG, "exception: " + e.getMessage());
+                }
+            }
+            else {
+                this.group = data.groups.get(selectedGroup);
+                this.shareMsg = getString(R.string.share_msg_existing);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            String shareUrl = this.context.getString(R.string.share_link) + this.group.hash;
+
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
+            MainActivity.getActivity().startActivity(Intent.createChooser(i, this.shareMsg + " (" + this.group.id + ")"));
+
         }
 
     }
