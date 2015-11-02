@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private RequestCrafter resourceCrafter;
     private ServiceConnection mConnection = this;
+    private boolean mIsBound;
     private GetGroupDataService.MyLocalBinder binder;
     private String newUrlGroupHash;
 
@@ -221,9 +222,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         Log.e(LOG_TAG, e.getMessage());
                     }
 
-                    Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
-                    i.putExtra(GROUP_HASH, MainActivity.this.newUrlGroupHash);
-                    bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+                    doBindService(MainActivity.this.newUrlGroupHash);
                 }
             }).start();
         }
@@ -271,10 +270,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     }
 
-    public void unbindService(){
-        if(this.binder!=null && this.binder.getService().isBinded()) {
+    public void doBindService(String groupHash) {
+        Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
+        i.putExtra(GROUP_HASH, groupHash);
+        bindService(i, mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    public void doUnbindService() {
+        if (mIsBound) {
             Log.d(LOG_TAG, "service UNbinded!");
             unbindService(mConnection);
+            mIsBound = false;
         }
     }
 
@@ -282,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onStop(){
         super.onStop();
         Log.d(LOG_TAG, "onStop");
-        unbindService();
+        doUnbindService();
     }
 
     @Override

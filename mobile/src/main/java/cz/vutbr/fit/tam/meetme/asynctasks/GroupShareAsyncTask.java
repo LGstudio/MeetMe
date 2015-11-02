@@ -58,11 +58,8 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        // bind to service
-        Intent intent1 = new Intent(MainActivity.getActivity(), GetGroupDataService.class);
-        intent1.putExtra(MainActivity.GROUP_HASH, this.group.hash);
-        MainActivity.getActivity().bindService(intent1, MainActivity.getActivity().getmConnection(), Context.BIND_AUTO_CREATE);
-
+        //bind to new service
+        MainActivity.getActivity().doBindService(this.group.hash);
 
         String shareUrl = this.context.getString(R.string.share_link) + this.group.hash;
 

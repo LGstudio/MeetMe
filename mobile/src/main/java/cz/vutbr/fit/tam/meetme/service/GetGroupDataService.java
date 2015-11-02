@@ -26,8 +26,6 @@ public class GetGroupDataService extends Service {
     private Timer mTimer = new Timer();
     private String groupHash;
     private RequestCrafter resourceCrafter;
-    private boolean isBinded;
-
 
     @Override
     public void onCreate() {
@@ -40,8 +38,6 @@ public class GetGroupDataService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        this.isBinded = true;
-
         if(intent != null){
             this.groupHash = intent.getStringExtra(MainActivity.GROUP_HASH);
         }
@@ -72,11 +68,6 @@ public class GetGroupDataService extends Service {
             mTimer.cancel();
         }
     }
-
-    public boolean isBinded() {
-        return isBinded;
-    }
-
     //////////////////////////////////////////
     // Nested classes
     /////////////////////////////////////////
