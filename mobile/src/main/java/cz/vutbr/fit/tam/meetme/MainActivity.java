@@ -271,14 +271,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(LOG_TAG, "onStop");
+    public void unbindService(){
         if(this.binder!=null && this.binder.getService().isBinded()) {
             Log.d(LOG_TAG, "service UNbinded!");
             unbindService(mConnection);
         }
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.d(LOG_TAG, "onStop");
+        unbindService();
     }
 
     @Override
@@ -402,6 +406,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     public static MainActivity getActivity() {
         return activity;
+    }
+
+    public ServiceConnection getmConnection() {
+        return mConnection;
     }
 
     public RequestCrafter getResourceCrafter() {

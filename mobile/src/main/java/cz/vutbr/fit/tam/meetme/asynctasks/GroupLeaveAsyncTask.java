@@ -7,6 +7,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
@@ -73,6 +74,9 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
             else {
                 data.groups.remove(selectedGroup);
             }
+
+            //unbind service
+            MainActivity.getActivity().unbindService();
 
             Log.d(TAG, "GroupLeave async task successful");
         }

@@ -11,6 +11,7 @@ import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
+import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
 
 public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     private final String TAG="GroupShareAsyncTask";
@@ -57,13 +58,19 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
+        // bind to service
+        Intent intent1 = new Intent(MainActivity.getActivity(), GetGroupDataService.class);
+        intent1.putExtra(MainActivity.GROUP_HASH, this.group.hash);
+        MainActivity.getActivity().bindService(intent1, MainActivity.getActivity().getmConnection(), Context.BIND_AUTO_CREATE);
+
+
         String shareUrl = this.context.getString(R.string.share_link) + this.group.hash;
 
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("text/plain");
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
-        MainActivity.getActivity().startActivity(Intent.createChooser(i, this.shareMsg + " (" + this.group.id + ")"));
+        Intent intent2 = new Intent(Intent.ACTION_SEND);
+        intent2.setType("text/plain");
+        intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent2.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
+        MainActivity.getActivity().startActivity(Intent.createChooser(intent2, this.shareMsg + " (" + this.group.id + ")"));
 
     }
 
