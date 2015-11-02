@@ -12,4 +12,5 @@
     <dimen name="add_button_size">50dp</dimen>
     <dimen name="spinner_divider_height">15dp</dimen>
     <dimen name="arrow_area_padding">10dp</dimen>
+    <dimen name="center_compass_size">70dp</dimen>
 </resources>

@@ -424,6 +424,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             fragCompass.changeSpinnerData();
+            fragMap.updateLocations();
         }
     }
 }

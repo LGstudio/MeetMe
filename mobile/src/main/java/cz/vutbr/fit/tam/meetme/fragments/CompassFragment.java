@@ -134,7 +134,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         }
 
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
-        if (selectedPerson < devices.size()) personSpinner.setSelection(selectedPerson);
+        personSpinner.setSelection(selectedPerson);
     }
 
 

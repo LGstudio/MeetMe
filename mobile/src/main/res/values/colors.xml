@@ -26,7 +26,8 @@
     <color name="flat_6_light">#5fcd6c</color>
     <color name="flat_6_dark">#4aa652</color>
 
-    <color name="flat_brightness_difference">#242424</color>
+    <color name="flat_brightness_difference_dark">#242424</color>
+    <color name="flat_brightness_difference_white">#cacaca</color>
 
     <color name="indication_good">@color/flat_6_dark</color>
     <color name="indication_bad">@color/flat_3_dark</color>

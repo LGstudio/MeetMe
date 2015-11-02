@@ -1,8 +1,6 @@
 package cz.vutbr.fit.tam.meetme.schema;
 
 import android.app.Activity;
-import android.location.Location;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +37,7 @@ public class AllConnectionData {
         allGroup.deviceInfoList = new ArrayList<>();
         groups.add(allGroup);
 
-        groupColor.put(0, R.color.flat_brightness_difference);
+        groupColor.put(0, R.color.flat_brightness_difference_dark);
     }
 
     /**

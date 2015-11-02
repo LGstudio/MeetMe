@@ -34,7 +34,7 @@
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:gravity="center_vertical"
-        android:textColor="@color/flat_brightness_difference"
+        android:textColor="@color/flat_brightness_difference_dark"
         android:text=""
         android:layout_weight="0.67"/>
 

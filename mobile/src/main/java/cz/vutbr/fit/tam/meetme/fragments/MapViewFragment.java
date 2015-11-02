@@ -1,5 +1,9 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,6 +14,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -17,6 +22,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 
 import cz.vutbr.fit.tam.meetme.R;
+import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
+import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 
 
 /**
@@ -45,17 +52,6 @@ public class MapViewFragment extends MeetMeFragment {
 
         googleMap = mMapView.getMap();
         googleMap.setMyLocationEnabled(true);
-
-        // latitude and longitude
-
-        // create marker
-        //MarkerOptions marker = new MarkerOptions().position(new LatLng(data.myLatitude, data.myLongitude)).title(getString(R.string.map_me));
-
-        // Changing marker icon
-        //marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
-
-        // adding marker
-        //googleMap.addMarker(marker);
 
         LatLng myPos = new LatLng(data.myLatitude, data.myLongitude);
         CameraPosition cameraPosition = new CameraPosition.Builder().target(myPos).zoom(14).build();
@@ -87,5 +83,39 @@ public class MapViewFragment extends MeetMeFragment {
     public void onLowMemory() {
         super.onLowMemory();
         mMapView.onLowMemory();
+    }
+
+    public void updateLocations(){
+
+        googleMap.clear();
+
+        for (GroupInfo g: data.groups){
+            for (DeviceInfo d: g.deviceInfoList){
+                MarkerOptions marker = new MarkerOptions();
+                marker.position(new LatLng(d.latitude, d.longitude));
+                marker.title("(" + d.id + ")");
+
+                Drawable icon = getResources().getDrawable(R.drawable.map_marker);
+                icon = icon.mutate();
+                icon.setColorFilter(getResources().getColor(data.groupColor.get(g.id)), PorterDuff.Mode.MULTIPLY);
+
+                Canvas canvas = new Canvas();
+                Bitmap bitmap = Bitmap.createBitmap(icon.getIntrinsicWidth(), icon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+                canvas.setBitmap(bitmap);
+                icon.draw(canvas);
+
+                BitmapDescriptor i = BitmapDescriptorFactory.fromBitmap(bitmap);
+                marker.icon(i);
+                googleMap.addMarker(marker);
+            }
+        }
+        // create marker
+        //MarkerOptions marker = new MarkerOptions().position(new LatLng(data.myLatitude, data.myLongitude)).title(getString(R.string.map_me));
+
+        // Changing marker icon
+        //marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+
+        // adding marker
+        //
     }
 }
