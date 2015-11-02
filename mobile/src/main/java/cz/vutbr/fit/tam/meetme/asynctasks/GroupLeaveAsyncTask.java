@@ -36,18 +36,15 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
         @Override
         protected Void doInBackground(Void... params) {
 
-            if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-                //index 0 is ALL group, so for cycle starts at 1
-                if(data.groups.size()>1) {
-
-                    for (int i = 1; i < data.groups.size(); i++) {
-                        try {
-                            resourceCrafter.restGroupDetach(data.groups.get(i).hash);
-                        } catch (Exception e){
-                            Log.d(TAG, "Exception during detaching from all groups index:"+ i + ", msg:"+ e.getMessage());
-                        }
+            if (selectedGroup == 0) {
+                for (int i = 1; i < data.groups.size(); i++) {
+                    try {
+                        resourceCrafter.restGroupDetach(data.groups.get(i).hash);
+                    } catch (Exception e){
+                        Log.d(TAG, "Exception during detaching from all groups index:"+ i + ", msg:"+ e.getMessage());
                     }
                 }
+
             }
             else {
 
@@ -65,15 +62,6 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
-            if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-                GroupInfo base = data.groups.get(0);
-                data.groups = new ArrayList<>();
-                data.groups.add(base);
-            }
-            else {
-                data.groups.remove(selectedGroup);
-            }
 
             //unbind service
             MainActivity.getActivity().doUnbindService();

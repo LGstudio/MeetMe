@@ -46,7 +46,7 @@ public class AllConnectionData {
      */
     public void updateGroupInfo(GroupInfo newGroup){
 
-        if (newGroup.getDeviceInfoList() != null)
+        //if (newGroup.getDeviceInfoList() != null)
             for (DeviceInfo d: newGroup.getDeviceInfoList()){
                 float[] calc = computeDistanceAndBearing(myLatitude,myLongitude,d.latitude,d.longitude);
                 d.distance = calc[0];

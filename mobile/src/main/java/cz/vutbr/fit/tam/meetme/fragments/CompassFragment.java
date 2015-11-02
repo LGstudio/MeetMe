@@ -43,6 +43,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     public int selectedGroup = 0;
     public int selectedPerson = 0;
 
+    protected ArrayList<GroupInfo> groups;
     protected ArrayList<DeviceInfo> devices;
 
     @Override
@@ -96,7 +97,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Changes the data in the spinners based on the dara.grops array
      */
     public void changeSpinnerData() {
-        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
+        groups = (ArrayList<GroupInfo>) data.groups.clone();
+        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
         groupSpinner.setSelection(selectedGroup);
         addDevicesToSpinner();
     }
@@ -113,15 +115,15 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         all.name = getString(R.string.dropdown_all_contact);
         devices.add(all);
 
-        if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-            for (GroupInfo g : data.groups) {
+        if (selectedGroup == 0) {
+            for (GroupInfo g : groups) {
                 for (DeviceInfo d : g.getDeviceInfoList()) {
                     devices.add(d);
                 }
             }
             leaveButton.setText(getString(R.string.button_end_all_connection));
         } else {
-            for (DeviceInfo d : data.groups.get(selectedGroup).getDeviceInfoList()) {
+            for (DeviceInfo d : groups.get(selectedGroup).getDeviceInfoList()) {
                 devices.add(d);
             }
             leaveButton.setText(getString(R.string.button_end_connection));
@@ -182,6 +184,15 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
         gl.execute();
 
+        if (selectedGroup == 0) {
+            GroupInfo base = data.groups.get(0);
+            data.groups = new ArrayList<>();
+            data.groups.add(base);
+        }
+        else {
+            data.groups.remove(selectedGroup);
+        }
+
         selectedGroup = 0;
         selectedPerson = 0;
         changeSpinnerData();
@@ -203,13 +214,13 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
 
 
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
-            groupSizeText.setText(data.groups.get(position).toString());
+            groupSizeText.setText(groups.get(position).toString());
 
 
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
             icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(data.groupColor.get(data.groups.get(position).id)), PorterDuff.Mode.MULTIPLY);
+            icon.setColorFilter(getResources().getColor(data.groupColor.get(groups.get(position).id)), PorterDuff.Mode.MULTIPLY);
             groupIcon.setImageDrawable(icon);
 
             return spinnerElement;
