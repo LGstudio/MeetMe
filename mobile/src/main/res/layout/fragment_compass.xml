@@ -65,7 +65,6 @@
 
         <Button
             android:id="@+id/button_exit"
-            android:enabled="false"
             android:layout_width="0dp"
             android:layout_weight="0.75"
             android:layout_height="@dimen/add_button_size"

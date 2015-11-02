@@ -8,8 +8,8 @@
     <color name="bckGray">#d2d2d2</color>
     <color name="transparent">#00000000</color>
 
-    <color name="end_button_bck_1">#df2d3b</color>
-    <color name="end_button_bck_2">#62151d</color>
+    <color name="end_button_bck_1">#d66972</color>
+    <color name="end_button_bck_2">@color/flat_3_dark</color>
 
     <color name="flat_0_light">#c4c4c4</color>
     <color name="flat_0_dark">#a0a0a0</color>

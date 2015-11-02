@@ -125,10 +125,12 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
                     devices.add(d);
                 }
             }
+            leaveButton.setText(getString(R.string.button_end_all_connection));
         } else {
             for (DeviceInfo d : data.groups.get(selectedGroup).deviceInfoList) {
                 devices.add(d);
             }
+            leaveButton.setText(getString(R.string.button_end_connection));
         }
 
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
@@ -186,10 +188,20 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      */
     private void leaveGroup() {
         if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-            // TODO: Leave all groups
+            // TODO: Detach all groups from server
+
+            GroupInfo base = data.groups.get(0);
+            data.groups = new ArrayList<>();
+            data.groups.add(base);
         } else {
-            // TODO: Leave data.groups.get(selectedGroup)
+            // TODO: Detach data.groups.get(selectedGroup) from server
+
+            data.groups.remove(selectedGroup);
         }
+
+        selectedGroup = 0;
+        selectedPerson = 0;
+        changeSpinnerData();
     }
 
     /**
