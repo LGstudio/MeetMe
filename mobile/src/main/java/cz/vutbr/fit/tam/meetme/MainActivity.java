@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -53,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private MapViewFragment fragMap;
 
     private AllConnectionData data;
-    private GroupUpdaterTask groupUpdaterTask;
 
     private ImageButton gpsStatus;
     private ImageButton netStatus;
@@ -314,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         public void onReceive(Context context, Intent intent) {
 
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
-            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
+            data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
         }
     };
@@ -402,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     public void showGroupData(GroupInfo g){
-        groupUpdaterTask = new GroupUpdaterTask(g);
+        GroupUpdaterTask groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
     }
 

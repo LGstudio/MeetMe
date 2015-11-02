@@ -44,19 +44,21 @@ public class MapViewFragment extends MeetMeFragment {
         }
 
         googleMap = mMapView.getMap();
+        googleMap.setMyLocationEnabled(true);
+
         // latitude and longitude
 
         // create marker
-        MarkerOptions marker = new MarkerOptions().position(
-                new LatLng(data.myLatitude, data.myLongitude)).title(getString(R.string.map_me));
+        //MarkerOptions marker = new MarkerOptions().position(new LatLng(data.myLatitude, data.myLongitude)).title(getString(R.string.map_me));
 
         // Changing marker icon
-        marker.icon(BitmapDescriptorFactory
-                .defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        //marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
 
         // adding marker
-        googleMap.addMarker(marker);
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(data.myLatitude, data.myLongitude)).zoom(12).build();
+        //googleMap.addMarker(marker);
+
+        LatLng myPos = new LatLng(data.myLatitude, data.myLongitude);
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(myPos).zoom(14).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
         // Perform any camera updates here
