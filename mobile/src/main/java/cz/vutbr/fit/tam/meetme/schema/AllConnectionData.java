@@ -46,11 +46,12 @@ public class AllConnectionData {
      */
     public void updateGroupInfo(GroupInfo newGroup){
 
-        for (DeviceInfo d: newGroup.getDeviceInfoList()){
-            float[] calc = computeDistanceAndBearing(myLatitude,myLongitude,d.latitude,d.longitude);
-            d.distance = calc[0];
-            d.bearing = calc[1];
-        }
+        if (newGroup.getDeviceInfoList() != null)
+            for (DeviceInfo d: newGroup.getDeviceInfoList()){
+                float[] calc = computeDistanceAndBearing(myLatitude,myLongitude,d.latitude,d.longitude);
+                d.distance = calc[0];
+                d.bearing = calc[1];
+            }
 
         boolean groupExists = false;
         for (GroupInfo g: groups){
