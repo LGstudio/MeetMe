@@ -46,10 +46,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     private RelativeLayout arrowArea;
     private Spinner groupSpinner;
     private Spinner personSpinner;
-    protected int selectedGroup = 0;
-    protected int selectedPerson = 0;
-
-    private ArrowView[] arrows;
+    public int selectedGroup = 0;
+    public int selectedPerson = 0;
 
     protected ArrayList<DeviceInfo> devices;
 
@@ -94,18 +92,19 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             }
         });
 
-        changeLayout();
+        changeSpinnerData();
         createArrows();
 
         return view;
     }
 
-    public void changeLayout() {
+    /**
+     * Changes the data in the spinners based on the dara.grops array
+     */
+    public void changeSpinnerData() {
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, data.groups));
         groupSpinner.setSelection(selectedGroup);
         addDevicesToSpinner();
-        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
-        if (selectedPerson < devices.size()) personSpinner.setSelection(selectedPerson);
     }
 
     /**
@@ -120,7 +119,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         all.name = getString(R.string.dropdown_all_contact);
         devices.add(all);
 
-        if (selectedGroup == 0) {
+        if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
             for (GroupInfo g : data.groups) {
                 for (DeviceInfo d : g.deviceInfoList) {
                     devices.add(d);
@@ -131,6 +130,9 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
                 devices.add(d);
             }
         }
+
+        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
+        if (selectedPerson < devices.size()) personSpinner.setSelection(selectedPerson);
     }
 
 
@@ -183,7 +185,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Leaves the appropriate group based on the group spinners selection
      */
     private void leaveGroup() {
-        if (selectedGroup == 0) {
+        if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
             // TODO: Leave all groups
         } else {
             // TODO: Leave data.groups.get(selectedGroup)
@@ -238,13 +240,13 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             TextView personText = (TextView) spinnerElement.findViewById(R.id.list_person_item_text);
             personText.setText(devices.get(position).toString());
 
-/**
- ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
- Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
- icon = icon.mutate();
- icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
- personIcon.setImageDrawable(icon);
- */
+            /**
+             ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
+             Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
+             icon = icon.mutate();
+             icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
+             personIcon.setImageDrawable(icon);
+             */
             return spinnerElement;
         }
 
@@ -268,7 +270,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         @Override
         protected Void doInBackground(Void... params) {
 
-            if (selectedGroup == 0) {
+            if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
                 try {
                     this.group = this.resourceCrafter.restGroupCreate(this.loc);
                     data.updateGroupInfo(this.group);
@@ -299,4 +301,5 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         }
 
     }
+
 }

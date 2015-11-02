@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -62,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private RequestCrafter resourceCrafter;
     private ServiceConnection mConnection = this;
     private GetGroupDataService.MyLocalBinder binder;
-    private String groupHash;
+    private String newUrlGroupHash;
 
     private static MainActivity activity;
     private static SharedPreferences prefs;
@@ -193,55 +192,42 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     @Override
-    public void onStart(){
-        super.onStart();
-        Log.d("GetGroupDataService", "onStart");
-        appInit();
+    public void onResume(){
+        super.onResume();
+        Log.d("GetGroupDataService", "onResume");
+        handleOpenViaUrl();
     }
 
     /**
-     * Pokud app je zapla z App drawer -> vytvari group pro sdileni
-     * Pokud byla zapla klikem na odkaz -> pripoji se do group a zapne GetGroupDataService
-     * */
-    private void appInit() {
+     * Handles tha case when the app was opened by an url
+     * Starts GetGroupDataService and connects into a group
+     */
+    private void handleOpenViaUrl() {
         final Location loc = new Location("testLocation");
 
-        this.groupHash = getIntentData();
-        if(groupHash != null){
-            Log.d(LOG_TAG, "joining group:" + groupHash);
+        this.newUrlGroupHash = getIntentData();
+        if(newUrlGroupHash != null){
+            Log.d(LOG_TAG, "joining group:" + newUrlGroupHash);
             //join group
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        GroupInfo gi = resourceCrafter.restGroupAttach(groupHash, loc);
+                        GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
                     }
                     catch(InternalErrorException e){
                         Log.e(LOG_TAG, e.getMessage());
                     }
 
                     Intent i = new Intent(MainActivity.this, GetGroupDataService.class);
-                    i.putExtra(GROUP_HASH, MainActivity.this.groupHash);
+                    i.putExtra(GROUP_HASH, MainActivity.this.newUrlGroupHash);
                     bindService(i, mConnection, Context.BIND_AUTO_CREATE);
                 }
             }).start();
         }
     }
 
-
-    @Override
-    public void onStop(){
-        Log.d(LOG_TAG, "onStop");
-        super.onStop();
-
-        if(this.binder!=null && this.binder.getService().isBinded()) {
-            Log.d(LOG_TAG, "service UNbinded!");
-            unbindService(mConnection);
-        }
-    }
-
-
     /**
-    * @return groupHash
+    * @return newUrlGroupHash
     * */
     private String getIntentData() {
         if(getIntent().getData()!= null) {
@@ -253,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                 List<String> params = data.getPathSegments();
                 //String first = params.get(0); // "meetme"
-                return params.get(1); // "groupHash"
+                return params.get(1); // "newUrlGroupHash"
             }catch (Exception e){
                 Log.d(LOG_TAG, "Exception durring intent.gedData(): " + e.getMessage());
             }
@@ -266,6 +252,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(LOG_TAG, "service binded!");
             MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
@@ -274,6 +266,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     public void onServiceDisconnected(ComponentName name) {
 
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.d(LOG_TAG, "onStop");
+        if(this.binder!=null && this.binder.getService().isBinded()) {
+            Log.d(LOG_TAG, "service UNbinded!");
+            unbindService(mConnection);
+        }
     }
 
     @Override
@@ -313,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
-
 
         }
     };
@@ -401,7 +402,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     public void showGroupData(GroupInfo g){
-        Toast.makeText(this.getApplicationContext(),"group: " + g.id,Toast.LENGTH_SHORT);
         groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
     }
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            fragCompass.changeLayout();
+            fragCompass.changeSpinnerData();
         }
     }
 }
