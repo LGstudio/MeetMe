@@ -90,7 +90,7 @@ public class MapViewFragment extends MeetMeFragment {
         googleMap.clear();
 
         for (GroupInfo g: data.groups){
-            for (DeviceInfo d: g.deviceInfoList){
+            for (DeviceInfo d: g.getDeviceInfoList()){
                 MarkerOptions marker = new MarkerOptions();
                 marker.position(new LatLng(d.latitude, d.longitude));
                 marker.title("(" + d.id + ")");

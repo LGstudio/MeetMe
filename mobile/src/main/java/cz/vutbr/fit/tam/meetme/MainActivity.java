@@ -212,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             new Thread(new Runnable() {
                 public void run() {
                     try {
+                        loc.setLatitude(MainActivity.this.data.myLatitude);
+                        loc.setLongitude(MainActivity.this.data.myLongitude);
+
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
                     }
                     catch(InternalErrorException e){
@@ -391,6 +394,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
         });
 
+    }
+
+    public AllConnectionData getData() {
+        return data;
     }
 
     public static MainActivity getActivity() {

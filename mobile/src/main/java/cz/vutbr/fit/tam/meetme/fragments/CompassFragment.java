@@ -1,13 +1,9 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,14 +16,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-
 import java.util.ArrayList;
-
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
-import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
+import cz.vutbr.fit.tam.meetme.asynctasks.GroupLeaveAsyncTask;
+import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
-import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
@@ -38,7 +32,7 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  *         Fragment that shows the compass.
  */
 public class CompassFragment extends MeetMeFragment implements View.OnClickListener {
-
+    public static final String LOG_TAG = "CompassFragment";
     private View view;
 
     private SquareButton addButton;
@@ -121,13 +115,13 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
 
         if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
             for (GroupInfo g : data.groups) {
-                for (DeviceInfo d : g.deviceInfoList) {
+                for (DeviceInfo d : g.getDeviceInfoList()) {
                     devices.add(d);
                 }
             }
             leaveButton.setText(getString(R.string.button_end_all_connection));
         } else {
-            for (DeviceInfo d : data.groups.get(selectedGroup).deviceInfoList) {
+            for (DeviceInfo d : data.groups.get(selectedGroup).getDeviceInfoList()) {
                 devices.add(d);
             }
             leaveButton.setText(getString(R.string.button_end_connection));
@@ -177,9 +171,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
     private void createNewGroup() {
-        final Location loc = new Location("testLocation");
-
-        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), MainActivity.getActivity().getResourceCrafter(), loc);
+        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
         gs.execute();
     }
 
@@ -187,17 +179,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Leaves the appropriate group based on the group spinners selection
      */
     private void leaveGroup() {
-        if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-            // TODO: Detach all groups from server
-
-            GroupInfo base = data.groups.get(0);
-            data.groups = new ArrayList<>();
-            data.groups.add(base);
-        } else {
-            // TODO: Detach data.groups.get(selectedGroup) from server
-
-            data.groups.remove(selectedGroup);
-        }
+        GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
+        gl.execute();
 
         selectedGroup = 0;
         selectedPerson = 0;
@@ -264,54 +247,6 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
 
     }
 
-    public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
-        private final String TAG="GroupShareAsyncTask";
 
-        private RequestCrafter resourceCrafter;
-        private Context context;
-        private Location loc;
-        private GroupInfo group = null;
-        private String shareMsg;
-
-        public GroupShareAsyncTask(Context context, RequestCrafter rc, Location loc){
-            this.resourceCrafter = rc;
-            this.context = context.getApplicationContext();
-            this.loc = loc;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
-                try {
-                    this.group = this.resourceCrafter.restGroupCreate(this.loc);
-                    data.updateGroupInfo(this.group);
-                    this.shareMsg = getString(R.string.share_msg_new);
-                } catch (InternalErrorException e) {
-                    Log.d(TAG, "exception: " + e.getMessage());
-                }
-            }
-            else {
-                this.group = data.groups.get(selectedGroup);
-                this.shareMsg = getString(R.string.share_msg_existing);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            String shareUrl = this.context.getString(R.string.share_link) + this.group.hash;
-
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("text/plain");
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
-            MainActivity.getActivity().startActivity(Intent.createChooser(i, this.shareMsg + " (" + this.group.id + ")"));
-
-        }
-
-    }
 
 }

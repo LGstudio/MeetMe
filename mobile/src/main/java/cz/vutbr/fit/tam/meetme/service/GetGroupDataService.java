@@ -26,7 +26,6 @@ public class GetGroupDataService extends Service {
     private Timer mTimer = new Timer();
     private String groupHash;
     private RequestCrafter resourceCrafter;
-
     private boolean isBinded;
 
 
@@ -35,8 +34,7 @@ public class GetGroupDataService extends Service {
         super.onCreate();
         Log.i(LOG_TAG, "Service Started.");
 
-        this.resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
-
+        this.resourceCrafter = MainActivity.getActivity().getResourceCrafter();
         mTimer.scheduleAtFixedRate(new GetGroupDataTask(), 0, PERIOD);
     }
 
@@ -89,7 +87,7 @@ public class GetGroupDataService extends Service {
     private class GetGroupDataTask extends TimerTask {
 
         public static final String LOG_TAG = "GetGroupDataTask";
-        final Location loc = new Location("testLocation");
+        final Location loc = new Location("deviceLocation"); //aby se nevytvarela furt nova instance...
 
         public GetGroupDataTask(){
             super();
@@ -99,6 +97,8 @@ public class GetGroupDataService extends Service {
         public void run() {
             if(GetGroupDataService.this.groupHash != null){
             try {
+                loc.setLatitude(MainActivity.getActivity().getData().myLatitude);
+                loc.setLongitude(MainActivity.getActivity().getData().myLongitude);
 
                 GroupInfo gi = resourceCrafter.restGroupData(groupHash, loc);
                 sendMessageActivity(gi);

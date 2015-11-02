@@ -10,7 +10,18 @@ public class GroupInfo {
 
     public Integer id;
     public String hash;
-    public List<DeviceInfo> deviceInfoList;
+    private List<DeviceInfo> deviceInfoList;
+
+    public List<DeviceInfo> getDeviceInfoList() {
+        if(deviceInfoList==null)
+            deviceInfoList = new ArrayList<>();
+
+        return deviceInfoList;
+    }
+
+    public void setDeviceInfoList(List<DeviceInfo> deviceInfoList) {
+        this.deviceInfoList = deviceInfoList;
+    }
 
     public String toString(){
         //return "(" + id + ")";

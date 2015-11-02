@@ -34,7 +34,7 @@ public class AllConnectionData {
         GroupInfo allGroup = new GroupInfo();
         allGroup.hash = parent.getString(R.string.dropdown_all_group);
         allGroup.id = 0;
-        allGroup.deviceInfoList = new ArrayList<>();
+        //allGroup.deviceInfoList = new ArrayList<>();
         groups.add(allGroup);
 
         groupColor.put(0, R.color.flat_brightness_difference_dark);
@@ -46,7 +46,7 @@ public class AllConnectionData {
      */
     public void updateGroupInfo(GroupInfo newGroup){
 
-        for (DeviceInfo d: newGroup.deviceInfoList){
+        for (DeviceInfo d: newGroup.getDeviceInfoList()){
             float[] calc = computeDistanceAndBearing(myLatitude,myLongitude,d.latitude,d.longitude);
             d.distance = calc[0];
             d.bearing = calc[1];
@@ -56,7 +56,7 @@ public class AllConnectionData {
         for (GroupInfo g: groups){
             if (g.id.equals(newGroup.id)){
                 groupExists = true;
-                g.deviceInfoList = newGroup.deviceInfoList;
+                g.setDeviceInfoList(newGroup.getDeviceInfoList());
                 break;
             }
         }
