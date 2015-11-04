@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -277,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         mIsBound = true;
     }
 
-    public void doUnbindService() {
+    public void doUnbindGroupDataService() {
         if (mIsBound) {
             Log.d(LOG_TAG, "service UNbinded!");
             unbindService(mConnection);
@@ -286,21 +285,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(LOG_TAG, "onStop");
-        doUnbindService();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
+
+        Log.d(LOG_TAG, "onDestroy called");
 
         stopService(new Intent(this, GPSLocationService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
 
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        doUnbindGroupDataService();
 
         prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
         prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();

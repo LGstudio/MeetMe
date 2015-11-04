@@ -5,8 +5,6 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.util.ArrayList;
-
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
 import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
@@ -64,7 +62,7 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
             super.onPostExecute(aVoid);
 
             //unbind service
-            MainActivity.getActivity().doUnbindService();
+            MainActivity.getActivity().doUnbindGroupDataService();
 
             Log.d(TAG, "GroupLeave async task successful");
         }
