@@ -288,8 +288,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onDestroy() {
         super.onDestroy();
 
-        Log.d(LOG_TAG, "onDestroy called");
-
         stopService(new Intent(this, GPSLocationService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
 
