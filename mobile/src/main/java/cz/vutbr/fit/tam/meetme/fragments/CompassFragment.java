@@ -181,7 +181,10 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      * Leaves the appropriate group based on the group spinners selection
      */
     private void leaveGroup() {
-        GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
+
+        String hash = this.data.groups.get(this.selectedGroup).hash;
+
+        GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(hash, MainActivity.getActivity().getResourceCrafter());
         gl.execute();
 
         if (selectedGroup == 0) {
