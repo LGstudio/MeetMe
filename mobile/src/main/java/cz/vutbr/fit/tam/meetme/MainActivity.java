@@ -2,6 +2,8 @@ package cz.vutbr.fit.tam.meetme;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -24,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -45,7 +48,8 @@ import cz.vutbr.fit.tam.meetme.service.SensorService;
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
 
     private static final String LOG_TAG = "MainActivity";
-    public static final String GROUP_HASH="group_hash";
+    public static final String GROUP_HASH = "group_hash";
+    private final int NOTIFICATION_ID = 1;
 
     private boolean isLoggedIn = true;
 
@@ -98,13 +102,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             alertDialogBuilder.setMessage(R.string.network_dialog_text)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.network_dialog_positive,new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
+                    .setPositiveButton(R.string.network_dialog_positive, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
                             MainActivity.this.openNetworkSettings();
                         }
                     })
-                    .setNegativeButton(R.string.network_dialog_negative,new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
+                    .setNegativeButton(R.string.network_dialog_negative, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
                             dialog.cancel();
                             //MainActivity.this.finish();
                         }
@@ -135,12 +139,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             alertDialog.show();
         }
 
-        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
+        resourceCrafter = new RequestCrafter(System.getProperty("http.agent", "NO USER AGENT"), this.getApplicationContext());
 
-        if (isLoggedIn){
+        if (isLoggedIn) {
             showLoggedInLayout();
-        }
-        else {
+        } else {
             //TODO: LOGIN SCREEN
         }
 
@@ -156,6 +159,42 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
             );
         }
+    }
+
+    public void showNotification() {
+        Intent resultIntent = new Intent(this, MainActivity.class);
+
+        // Because clicking the notification opens a new ("special") activity, there's
+        // no need to create an artificial back stack.
+        PendingIntent takeToMeetMeIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_gps)
+                        .setContentTitle("MeetMe")
+                        .setContentText("Meeting is running...")
+                        .setContentIntent(takeToMeetMeIntent);
+
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
+    public void dismissNotification(){
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // Sets an ID for the notification, so it can be updated
+        int notifyID = 1;
+
+        mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
     protected boolean isNetworkAvailable() {
@@ -192,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         Log.d("GetGroupDataService", "onResume");
         handleOpenViaUrl();
@@ -206,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         final Location loc = new Location("testLocation");
 
         this.newUrlGroupHash = getIntentData();
-        if(newUrlGroupHash != null){
+        if (newUrlGroupHash != null) {
             Log.d(LOG_TAG, "joining group:" + newUrlGroupHash);
             //join group
             new Thread(new Runnable() {
@@ -216,8 +255,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         loc.setLongitude(MainActivity.this.data.myLongitude);
 
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
-                    }
-                    catch(InternalErrorException e){
+                    } catch (InternalErrorException e) {
                         Log.e(LOG_TAG, e.getMessage());
                     }
 
@@ -228,24 +266,23 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     /**
-    * @return newUrlGroupHash
-    * */
+     * @return newUrlGroupHash
+     */
     private String getIntentData() {
-        if(getIntent().getData()!= null) {
+        if (getIntent().getData() != null) {
             Log.d(LOG_TAG, "with URL data");
 
-            try{
+            try {
                 //http://scattergoriesonline.net/meetme/groupHash
                 Uri data = getIntent().getData();
 
                 List<String> params = data.getPathSegments();
                 //String first = params.get(0); // "meetme"
                 return params.get(1); // "newUrlGroupHash"
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.d(LOG_TAG, "Exception durring intent.gedData(): " + e.getMessage());
             }
-        }
-        else{
+        } else {
             Log.d(LOG_TAG, "without URL data");
         }
 
@@ -260,8 +297,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(LOG_TAG, "service binded!");
-            MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
+        Log.d(LOG_TAG, "service binded!");
+        MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
     }
 
     @Override
@@ -337,8 +374,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                 if (err != null)
                     err.show();
-            }
-            else {
+            } else {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
                 alertDialogBuilder.setTitle(R.string.googleplay_dialog_title);
 
@@ -360,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
-    private void showLoggedInLayout(){
+    private void showLoggedInLayout() {
         data = new AllConnectionData(this);
 
         data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
@@ -417,16 +453,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return resourceCrafter;
     }
 
-    public void showGroupData(GroupInfo g){
+    public void showGroupData(GroupInfo g) {
         GroupUpdaterTask groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
     }
 
-    private class GroupUpdaterTask extends AsyncTask<Void,Void,Void>{
+    private class GroupUpdaterTask extends AsyncTask<Void, Void, Void> {
 
         private GroupInfo group;
 
-        public GroupUpdaterTask(GroupInfo g){
+        public GroupUpdaterTask(GroupInfo g) {
             group = g;
         }
 

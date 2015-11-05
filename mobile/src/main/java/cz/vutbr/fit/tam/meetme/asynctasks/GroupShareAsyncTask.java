@@ -58,6 +58,9 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
+        //show notification that meetme is running
+        MainActivity.getActivity().showNotification();
+
         //bind to new service
         MainActivity.getActivity().doBindService(this.group.hash);
 
