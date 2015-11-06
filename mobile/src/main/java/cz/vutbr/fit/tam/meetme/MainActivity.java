@@ -96,47 +96,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         });
 
         if (!isNetworkAvailable()) {
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-            alertDialogBuilder.setTitle(R.string.network_dialog_title);
-
-            alertDialogBuilder.setMessage(R.string.network_dialog_text)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.network_dialog_positive, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            MainActivity.this.openNetworkSettings();
-                        }
-                    })
-                    .setNegativeButton(R.string.network_dialog_negative, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            //MainActivity.this.finish();
-                        }
-                    });
-
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
+            MainActivity.this.showNetworkDialog();
         }
 
-        if (!isLocationEnabled()) {
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-            alertDialogBuilder.setTitle(R.string.location_dialog_title);
-
-            alertDialogBuilder.setMessage(R.string.location_dialog_text)
-                    .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            MainActivity.this.openLocationSettings();
-                        }
-                    })
-                    .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
+        if (isNetworkAvailable() && !isLocationEnabled()) {
+            MainActivity.this.showLocationDialog();
         }
 
         resourceCrafter = new RequestCrafter(System.getProperty("http.agent", "NO USER AGENT"), this.getApplicationContext());
@@ -220,6 +184,57 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         return (gps && net);
+    }
+
+    private void showNetworkDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setTitle(R.string.network_dialog_title);
+
+        alertDialogBuilder.setMessage(R.string.network_dialog_text)
+                .setPositiveButton(R.string.network_dialog_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        dialog.dismiss();
+
+                        if (!isNetworkAvailable()) {
+                            showNetworkDialog();
+                        }
+                        else {
+                            showLocationDialog();
+                        }
+                    }
+                })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        MainActivity.this.finish();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void showLocationDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setTitle(R.string.location_dialog_title);
+
+        alertDialogBuilder.setMessage(R.string.location_dialog_text)
+                .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        MainActivity.this.openLocationSettings();
+                    }
+                })
+                .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     private void openNetworkSettings() {

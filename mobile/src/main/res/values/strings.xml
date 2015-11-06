@@ -29,9 +29,9 @@
     <string name="share_msg_existing">Invite into group ..</string>
 
     <string name="network_dialog_title">Internet connection is disabled.</string>
-    <string name="network_dialog_text">Do you want to turn it on?</string>
-    <string name="network_dialog_positive">Yes</string>
-    <string name="network_dialog_negative">No</string>
+    <string name="network_dialog_text">Please, check your connection!</string>
+    <string name="network_dialog_positive">Try again</string>
+    <string name="network_dialog_negative">Cancel</string>
 
     <string name="location_dialog_title">Location service is disabled.</string>
     <string name="location_dialog_text">Do you want to turn it on?</string>
