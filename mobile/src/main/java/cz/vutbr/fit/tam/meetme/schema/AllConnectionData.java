@@ -1,6 +1,8 @@
 package cz.vutbr.fit.tam.meetme.schema;
 
 import android.app.Activity;
+import android.location.Location;
+import android.location.LocationManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,6 +89,7 @@ public class AllConnectionData {
 
         float[] result = new float[2];
 
+        /*
         int MAXITERS = 20;
         // Convert lat/long to radians
         lat1 *= Math.PI / 180.0;
@@ -154,6 +157,18 @@ public class AllConnectionData {
 
         result[1] = (float) Math.atan2(cosU2 * sinLambda, cosU1 * sinU2 - sinU1 * cosU2 * cosLambda);
         result[1] *= 180.0 / Math.PI;
+        */
+
+        Location from = new Location(LocationManager.GPS_PROVIDER);
+        from.setLatitude(lat1);
+        from.setLongitude(lon1);
+
+        Location to = new Location(LocationManager.GPS_PROVIDER);
+        to.setLatitude(lat2);
+        to.setLongitude(lon2);
+
+        result[0] = from.distanceTo(to);
+        result[1] = from.bearingTo(to);
 
         return result;
     }

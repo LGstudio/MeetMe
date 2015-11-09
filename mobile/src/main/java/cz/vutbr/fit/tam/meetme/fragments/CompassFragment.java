@@ -43,6 +43,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     public int selectedGroup = 0;
     public int selectedPerson = 0;
 
+    private float[] deviceRotation;
+
     protected ArrayList<GroupInfo> groups;
     protected ArrayList<DeviceInfo> devices;
 
@@ -50,6 +52,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
+
+        deviceRotation = new float[3];
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
@@ -155,6 +159,15 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
      */
     public void redrawCompass() {
 
+    }
+
+    public void setDeviceRotation(float x, float y, float z) {
+
+        deviceRotation[0] = x;
+        deviceRotation[1] = y;
+        deviceRotation[2] = z;
+
+        //redrawCompass();
     }
 
     @Override

@@ -364,8 +364,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             float y = Float.parseFloat(str_y);
             float z = Float.parseFloat(str_z);
 
-            // TODO: angle (arrow rotation) = from.bearingTo(to) - x (azimuth)
-            // TODO: distanceTo
+            fragCompass.setDeviceRotation(x, y, z);
         }
     };
 
