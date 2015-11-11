@@ -1,6 +1,7 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -34,7 +35,9 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  *         Fragment that shows the compass.
  */
 public class CompassFragment extends Fragment implements View.OnClickListener {
-    public static final String LOG_TAG = "CompassFragment";
+
+    private final static int ROTATION_DURATION = 120;
+
     private View view;
 
     private SquareButton addButton;
@@ -45,11 +48,11 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     public int selectedGroup = 0;
     public int selectedPerson = 0;
 
-    private float[] deviceRotation;
     private float degree;
     
     protected ArrayList<GroupInfo> groups;
     protected ArrayList<DeviceInfo> devices;
+    protected ArrayList<ArrowView> arrows;
 
     protected AllConnectionData data;
 
@@ -62,7 +65,8 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
 
-        deviceRotation = new float[3];
+        arrows = new ArrayList<>();
+
         degree = 0.0f;
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
@@ -80,7 +84,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                 selectedGroup = position;
                 selectedPerson = 0;
                 addDevicesToSpinner();
-                redrawCompass();
             }
 
             @Override
@@ -92,7 +95,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedPerson = position;
-                redrawCompass();
+                createArrows();
             }
 
             @Override
@@ -101,22 +104,24 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-        changeSpinnerData();
+        updateView();
         createArrows();
 
         return view;
     }
 
     /**
-     * Changes the data in the spinners based on the dara.grops array
+     * Changes the data in the spinners and arrow rotation
+     * based on the dara.grops array
      */
-    public void changeSpinnerData() {
+    public void updateView() {
         groups = (ArrayList<GroupInfo>) data.groups.clone();
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
         int tmp = selectedPerson;
         groupSpinner.setSelection(selectedGroup);
         selectedPerson = tmp;
         addDevicesToSpinner();
+        createArrows();
     }
 
     /**
@@ -152,49 +157,35 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
 
 
     public void createArrows() {
-        //-------------------
+        for (ArrowView a: arrows){
+            arrowArea.removeView(a);
+        }
+        arrows.clear();
 
-        ArrowView a = new ArrowView(getContext());
-        arrowArea.addView(a);
-
-        RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
-        r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        r.setDuration((long) 2 * 1500);
-        r.setRepeatCount(0);
-        a.startAnimation(r);
-
-        //--------------------
+        for (GroupInfo g: groups){
+            int c = getResources().getColor(data.groupColor.get(g.id));
+            for (DeviceInfo d: g.getDeviceInfoList()){
+                ArrowView a = new ArrowView(getContext());
+                a.arrow.setColorFilter(c, PorterDuff.Mode.MULTIPLY);
+                a.setRotation(d.bearing);
+                arrowArea.addView(a);
+            }
+        }
     }
 
     /**
-     * Redraws the compass area based on the ArrayList<GroupInfo> groups list.
-     * TODO: AsyncTask to refresh based on data
+     * Called when device rotation is changed
+     * @param x
      */
-    public void redrawCompass() {
+    public void setDeviceRotation(float x) {
 
-        ImageView image = (ImageView) view.findViewById(R.id.image_compass);
+        RotateAnimation r = new RotateAnimation(degree, x, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
-        float rotation = /* bearing */ - deviceRotation[0];
-
-        RotateAnimation r = new RotateAnimation(
-                degree, rotation,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-
-        r.setDuration(210);
+        r.setDuration(ROTATION_DURATION);
         r.setFillAfter(true);
-        image.startAnimation(r);
+        arrowArea.startAnimation(r);
 
-        degree = rotation;
-    }
-
-    public void setDeviceRotation(float x, float y, float z) {
-
-        deviceRotation[0] = x;
-        deviceRotation[1] = y;
-        deviceRotation[2] = z;
-
-        redrawCompass();
+        degree = x;
     }
 
     @Override
@@ -236,7 +227,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
 
         selectedGroup = 0;
         selectedPerson = 0;
-        changeSpinnerData();
+        updateView();
     }
 
     /**

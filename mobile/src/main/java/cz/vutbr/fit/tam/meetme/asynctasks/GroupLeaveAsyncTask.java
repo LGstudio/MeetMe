@@ -40,7 +40,7 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
             MainActivity.getActivity().dismissNotification();
 
             //unbind service
-            MainActivity.getActivity().doUnbindGroupDataService();
+            MainActivity.getActivity().doUnbindService();
 
             Log.d(TAG, "GroupLeave async task successful");
         }

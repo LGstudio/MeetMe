@@ -2,7 +2,8 @@ package cz.vutbr.fit.tam.meetme;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.FragmentManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,21 +20,17 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.support.design.widget.TabLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapsInitializer;
 
 import java.util.List;
@@ -51,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static final String LOG_TAG = "MainActivity";
     public static final String GROUP_HASH="group_hash";
+    private final int NOTIFICATION_ID = 1;
 
     private boolean isLoggedIn = true;
 
@@ -76,7 +74,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static SharedPreferences prefs;
 
     /**
-     *      ------------- Activity Lifecycle -----------------
+     * --------------------------------------------------------------------------------
+     * ------------- Activity Lifecycle -----------------------------------------------
+     * --------------------------------------------------------------------------------
      */
 
     @Override
@@ -95,47 +95,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
 
         if (!isNetworkAvailable()) {
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-            alertDialogBuilder.setTitle(R.string.network_dialog_title);
-
-            alertDialogBuilder.setMessage(R.string.network_dialog_text)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.network_dialog_positive,new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
-                            MainActivity.this.openNetworkSettings();
-                        }
-                    })
-                    .setNegativeButton(R.string.network_dialog_negative,new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
-                            dialog.cancel();
-                            //MainActivity.this.finish();
-                        }
-                    });
-
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
+            MainActivity.this.showNetworkDialog();
         }
 
-        if (!isLocationEnabled()) {
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-            alertDialogBuilder.setTitle(R.string.location_dialog_title);
-
-            alertDialogBuilder.setMessage(R.string.location_dialog_text)
-                    .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            MainActivity.this.openLocationSettings();
-                        }
-                    })
-                    .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
+        if (isNetworkAvailable() && !isLocationEnabled()) {
+            MainActivity.this.showLocationDialog();
         }
 
         startService(new Intent(this, SensorService.class));
@@ -177,12 +141,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
 
+        doUnbindService();
+
         prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
         prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
     }
 
     /**
-     *      ------------- Init activity -----------------
+     * --------------------------------------------------------------------------------
+     * ------------- Init activity ----------------------------------------------------
+     * --------------------------------------------------------------------------------
      */
 
     /**
@@ -321,6 +289,101 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return (gps && net);
     }
 
+
+    /**
+     * --------------------------------------------------------------------------------
+     *  ------------- Notifications ---------------------------------------------------
+     *  --------------------------------------------------------------------------------
+     */
+
+    public void showNotification() {
+        Intent resultIntent = new Intent(this, MainActivity.class);
+
+        // Because clicking the notification opens a new ("special") activity, there's
+        // no need to create an artificial back stack.
+        PendingIntent takeToMeetMeIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_gps)
+                        .setContentTitle("MeetMe")
+                        .setContentText("Meeting is running...")
+                        .setContentIntent(takeToMeetMeIntent);
+
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
+    public void dismissNotification(){
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // Sets an ID for the notification, so it can be updated
+        int notifyID = 1;
+
+        mNotificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    private void showNetworkDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setTitle(R.string.network_dialog_title);
+
+        alertDialogBuilder.setMessage(R.string.network_dialog_text)
+                .setPositiveButton(R.string.network_dialog_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        dialog.dismiss();
+
+                        if (!isNetworkAvailable()) {
+                            showNetworkDialog();
+                        }
+                        else {
+                            showLocationDialog();
+                        }
+                    }
+                })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        MainActivity.this.finish();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private void showLocationDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setTitle(R.string.location_dialog_title);
+
+        alertDialogBuilder.setMessage(R.string.location_dialog_text)
+                .setPositiveButton(R.string.location_dialog_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        MainActivity.this.openLocationSettings();
+                    }
+                })
+                .setNegativeButton(R.string.location_dialog_negative, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
+
     /**
      * Opens network settings window
      */
@@ -335,9 +398,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
     }
 
-
     /**
-     * ------------ Services ------------------
+     * --------------------------------------------------------------------------------
+     * ------------ Services ----------------------------------------------------------
+     * --------------------------------------------------------------------------------
      */
 
     @Override
@@ -365,33 +429,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             mIsBound = false;
         }
     }
-
-    private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
-            String str_y = intent.getStringExtra(context.getString(R.string.rotation_y));
-            String str_z = intent.getStringExtra(context.getString(R.string.rotation_z));
-
-            float x = Float.parseFloat(str_x);
-            float y = Float.parseFloat(str_y);
-            float z = Float.parseFloat(str_z);
-
-            // TODO: angle (arrow rotation) = from.bearingTo(to) - x (azimuth)
-            // TODO: distanceTo
-        }
-    };
-
-    private BroadcastReceiver gpsReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
-            data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
-
-        }
-    };
 
     private boolean checkGooglePlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -427,7 +464,41 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     /**
-     * -------------- Click Listener ---------------
+     * --------------------------------------------------------------------------------
+     * -------------- Broadcast Receivers ---------------------------------------------
+     * --------------------------------------------------------------------------------
+     */
+
+    private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
+            //String str_y = intent.getStringExtra(context.getString(R.string.rotation_y));
+            //String str_z = intent.getStringExtra(context.getString(R.string.rotation_z));
+
+            float x = Float.parseFloat(str_x);
+            //float y = Float.parseFloat(str_y);
+            //float z = Float.parseFloat(str_z);
+
+            fragCompass.setDeviceRotation(x);
+        }
+    };
+
+    private BroadcastReceiver gpsReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
+            data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
+
+        }
+    };
+
+    /**
+     * --------------------------------------------------------------------------------
+     * -------------- Click Listener --------------------------------------------------
+     * --------------------------------------------------------------------------------
      */
 
     @Override
@@ -456,7 +527,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     /**
-     * ----------- Share and Recieve async task stuff ------------------
+     * --------------------------------------------------------------------------------
+     * ----------- Share and Receive async task stuff ---------------------------------
+     * --------------------------------------------------------------------------------
      */
 
     public AllConnectionData getData() {
@@ -497,7 +570,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            fragCompass.changeSpinnerData();
+            fragCompass.updateView();
             if (isMapShowed) fragMap.updateLocations();
         }
     }

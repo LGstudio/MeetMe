@@ -17,7 +17,7 @@ public class ArrowView extends LinearLayout{
 
     public TextView distance;
     public ImageView arrow;
-    public ImageView image;
+    public TextView contactName;
 
     public ArrowView(Context context) {
         super(context);
