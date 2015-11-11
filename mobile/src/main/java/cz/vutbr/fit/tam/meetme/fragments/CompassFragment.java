@@ -45,6 +45,9 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     public int selectedGroup = 0;
     public int selectedPerson = 0;
 
+    private float[] deviceRotation;
+    private float degree;
+    
     protected ArrayList<GroupInfo> groups;
     protected ArrayList<DeviceInfo> devices;
 
@@ -58,6 +61,9 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
+
+        deviceRotation = new float[3];
+        degree = 0.0f;
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
@@ -166,6 +172,29 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      */
     public void redrawCompass() {
 
+        ImageView image = (ImageView) view.findViewById(R.id.image_compass);
+
+        float rotation = /* bearing */ - deviceRotation[0];
+
+        RotateAnimation r = new RotateAnimation(
+                degree, rotation,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+
+        r.setDuration(210);
+        r.setFillAfter(true);
+        image.startAnimation(r);
+
+        degree = rotation;
+    }
+
+    public void setDeviceRotation(float x, float y, float z) {
+
+        deviceRotation[0] = x;
+        deviceRotation[1] = y;
+        deviceRotation[2] = z;
+
+        redrawCompass();
     }
 
     @Override
@@ -192,7 +221,10 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      * Leaves the appropriate group based on the group spinners selection
      */
     private void leaveGroup() {
-        GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
+
+        String hash = this.data.groups.get(this.selectedGroup).hash;
+
+        GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(hash, MainActivity.getActivity().getResourceCrafter());
         gl.execute();
 
         if (selectedGroup == 0) {
