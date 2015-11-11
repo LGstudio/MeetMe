@@ -16,7 +16,7 @@ public class TabAdapter extends FragmentStatePagerAdapter {
 
     int mNumOfTabs;
 
-    ArrayList<MeetMeFragment> fragments;
+    ArrayList<Fragment> fragments;
 
     public TabAdapter(FragmentManager fm) {
         super(fm);
@@ -25,17 +25,9 @@ public class TabAdapter extends FragmentStatePagerAdapter {
         fragments = new ArrayList<>();
     }
 
-    public void addFragment(MeetMeFragment f){
+    public void addFragment(Fragment f){
         fragments.add(f);
         mNumOfTabs += 1;
-    }
-
-    public void removeFragment(int position){
-        fragments.remove(position);
-    }
-
-    public void clearAdapter() {
-        fragments.clear();
     }
 
     @Override

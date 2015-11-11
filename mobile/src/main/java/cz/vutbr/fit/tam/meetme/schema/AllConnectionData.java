@@ -26,18 +26,7 @@ public class AllConnectionData {
     public AllConnectionData(Activity a){
         parent = a;
 
-        colors = new GroupColor();
-        groupColor = new HashMap<>();
-
-        groups = new ArrayList<>();
-
-        GroupInfo allGroup = new GroupInfo();
-        allGroup.hash = parent.getString(R.string.dropdown_all_group);
-        allGroup.id = 0;
-        //allGroup.deviceInfoList = new ArrayList<>();
-        groups.add(allGroup);
-
-        groupColor.put(0, R.color.flat_brightness_difference_dark);
+        initNew();
     }
 
     /**
@@ -67,6 +56,81 @@ public class AllConnectionData {
             groupColor.put(newGroup.id, colors.getNextColor());
         }
 
+    }
+
+    public void initNew(){
+        colors = new GroupColor();
+        groupColor = new HashMap<>();
+
+        groups = new ArrayList<>();
+
+        GroupInfo allGroup = new GroupInfo();
+        allGroup.hash = parent.getString(R.string.dropdown_all_group);
+        allGroup.id = 0;
+        groups.add(allGroup);
+
+        groupColor.put(0, R.color.flat_brightness_difference_dark);
+
+
+   }
+
+    /**
+     * TEST DATA ----------------------------------------
+     */
+    public void addShit(){
+
+        GroupInfo testGroup = new GroupInfo();
+        testGroup.hash = "ABC";
+        testGroup.id = 1;
+        groupColor.put(1, colors.getNextColor());
+
+        //-------------------------------------------------------------------
+        DeviceInfo d1 = new DeviceInfo();
+        d1.name = "User 1";
+        d1.id = 1;
+        d1.latitude = myLatitude * 0.99;
+        d1.longitude = myLongitude * 1.1;
+        float[] calc1 = computeDistanceAndBearing(myLatitude,myLongitude,d1.latitude,d1.longitude);
+        d1.distance = calc1[0];
+        d1.bearing = calc1[1];
+
+        //-------------------------------------------------------------------
+        DeviceInfo d2 = new DeviceInfo();
+        d2.name = "User 2";
+        d2.id = 2;
+        d2.latitude = myLatitude * 1.05;
+        d2.longitude = myLongitude * 0.995;
+        float[] calc2 = computeDistanceAndBearing(myLatitude,myLongitude,d2.latitude,d2.longitude);
+        d2.distance = calc2[0];
+        d2.bearing = calc2[1];
+
+        //-------------------------------------------------------------------
+        ArrayList<DeviceInfo> l = new ArrayList<>();
+        l.add(d1);
+        l.add(d2);
+        testGroup.setDeviceInfoList(l);
+        groups.add(testGroup);
+
+        //-------------------------------------------------------------------
+        GroupInfo testGroup2 = new GroupInfo();
+        testGroup2.hash = "XYZ";
+        testGroup2.id = 2;
+        groupColor.put(2, colors.getNextColor());
+
+        DeviceInfo d3 = new DeviceInfo();
+        d3.name = "User 3";
+        d3.id = 3;
+        d3.latitude = myLatitude * 1.001;
+        d3.longitude = myLongitude * 0.999;
+        float[] calc3 = computeDistanceAndBearing(myLatitude,myLongitude,d3.latitude,d3.longitude);
+        d3.distance = calc3[0];
+        d3.bearing = calc3[1];
+
+        //-------------------------------------------------------------------
+        ArrayList<DeviceInfo> l2 = new ArrayList<>();
+        l2.add(d3);
+        testGroup2.setDeviceInfoList(l2);
+        groups.add(testGroup2);
     }
 
     public void disconnectFromGroup(int id){

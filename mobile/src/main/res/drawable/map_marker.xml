@@ -5,7 +5,7 @@
 
     <solid android:color="@color/flat_brightness_difference_white" />
 
-    <size android:width="10dp"
-          android:height="10dp"/>
+    <size android:width="@dimen/map_marker"
+          android:height="@dimen/map_marker"/>
 
 </shape>

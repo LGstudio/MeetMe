@@ -41,4 +41,5 @@
     <string name="googleplay_dialog_title">This device is not supported!</string>
     <string name="googleplay_dialog_text">Google Play Services</string>
     <string name="googleplay_dialog_positive">OK</string>
+    <string name="map_btn">MAP</string>
 </resources>

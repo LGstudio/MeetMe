@@ -6,47 +6,67 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/toolbar"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:orientation="horizontal"
-        android:gravity="right">
+        android:background="?attr/colorPrimary">
 
-        <ImageButton
-            android:id="@+id/toolbar_net_stat"
-            android:layout_width="?attr/actionBarSize"
-            android:layout_height="?attr/actionBarSize"
-            android:src="@drawable/ic_net"
-            android:background="@color/transparent"
-            android:contentDescription="@string/net_stat"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true">
 
-        <ImageButton
-            android:id="@+id/toolbar_gps_stat"
-            android:layout_width="?attr/actionBarSize"
-            android:layout_height="?attr/actionBarSize"
-            android:src="@drawable/ic_gps"
-            android:background="@color/transparent"
-            android:contentDescription="@string/gps_stat"/>
+            <ImageButton
+                android:id="@+id/toolbar_net_stat"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:src="@drawable/ic_net"
+                android:background="@color/transparent"/>
 
-    </LinearLayout>
+            <ImageButton
+                android:id="@+id/toolbar_gps_stat"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:src="@drawable/ic_gps"
+                android:background="@color/transparent"/>
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_below="@+id/toolbar"
-        android:background="?attr/colorPrimary"
-        android:minHeight="0dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+        </LinearLayout>
 
-    <android.support.v4.view.ViewPager
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true">
+
+            <TextView
+                android:id="@+id/toolbar_map"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:src="@drawable/ic_net"
+                android:background="@color/transparent"
+                android:text="@string/map_btn"
+                android:textColor="@color/bckColor"
+                android:gravity="center"
+                android:clickable="true"
+                android:textStyle="bold"/>
+
+            <ImageButton
+                android:id="@+id/toolbar_back"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:src="@drawable/ic_back"
+                android:background="@color/transparent"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <cz.vutbr.fit.tam.meetme.fragments.CustomViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/tab_layout"/>
+        android:layout_below="@id/toolbar"/>
 
 </RelativeLayout>

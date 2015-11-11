@@ -2,6 +2,7 @@ package cz.vutbr.fit.tam.meetme;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.support.v4.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,10 +28,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
 
 import java.util.List;
 
@@ -43,20 +47,24 @@ import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
 import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
 import cz.vutbr.fit.tam.meetme.service.SensorService;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+public class MainActivity extends AppCompatActivity implements ServiceConnection, View.OnClickListener {
 
     private static final String LOG_TAG = "MainActivity";
     public static final String GROUP_HASH="group_hash";
 
     private boolean isLoggedIn = true;
 
+    private boolean isMapShowed = false;
     private CompassFragment fragCompass;
     private MapViewFragment fragMap;
+    private CustomViewPager viewPager;
 
     private AllConnectionData data;
 
     private ImageButton gpsStatus;
     private ImageButton netStatus;
+    private ImageButton backToCompass;
+    private TextView showMap;
 
     private RequestCrafter resourceCrafter;
     private ServiceConnection mConnection = this;
@@ -67,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static MainActivity activity;
     private static SharedPreferences prefs;
 
+    /**
+     *      ------------- Activity Lifecycle -----------------
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,22 +87,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
-        gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
-        netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
-
-        netStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity.this.openNetworkSettings();
-            }
-        });
-
-        gpsStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity.this.openLocationSettings();
-            }
-        });
+        if (isLoggedIn){
+            showLoggedInLayout();
+        }
+        else {
+            //TODO: LOGIN SCREEN
+        }
 
         if (!isNetworkAvailable()) {
 
@@ -136,15 +138,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             alertDialog.show();
         }
 
-        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
-
-        if (isLoggedIn){
-            showLoggedInLayout();
-        }
-        else {
-            //TODO: LOGIN SCREEN
-        }
-
         startService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
@@ -159,45 +152,38 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
     }
 
-    protected boolean isNetworkAvailable() {
-
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
-    }
-
-    protected boolean isLocationEnabled() {
-
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        boolean gps;
-        boolean net;
-
-        try {
-            gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception e) {
-            return false;
-        }
-
-        return (gps && net);
-    }
-
-    private void openNetworkSettings() {
-        startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0);
-    }
-
-    private void openLocationSettings() {
-        startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
-    }
-
     @Override
     public void onResume(){
         super.onResume();
         Log.d("GetGroupDataService", "onResume");
         handleOpenViaUrl();
+
     }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.d(LOG_TAG, "onStop");
+        doUnbindService();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        stopService(new Intent(this, GPSLocationService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
+
+        stopService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
+        prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
+    }
+
+    /**
+     *      ------------- Init activity -----------------
+     */
 
     /**
      * Handles tha case when the app was opened by an url
@@ -229,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     }
 
     /**
-    * @return newUrlGroupHash
-    * */
+     * @return newUrlGroupHash
+     * */
     private String getIntentData() {
         if(getIntent().getData()!= null) {
             Log.d(LOG_TAG, "with URL data");
@@ -259,6 +245,101 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setIntent(intent);
     }
 
+    /**
+     * Initializes the layout with default data
+     */
+    private void showLoggedInLayout(){
+
+        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
+
+        gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
+        netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
+        showMap = (TextView) findViewById(R.id.toolbar_map);
+        backToCompass = (ImageButton) findViewById(R.id.toolbar_back);
+
+        netStatus.setOnClickListener(this);
+        gpsStatus.setOnClickListener(this);
+        showMap.setOnClickListener(this);
+        backToCompass.setOnClickListener(this);
+
+
+        data = new AllConnectionData(this);
+
+        data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
+        data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
+
+        //TODO : REMOVE TEST DATA
+        data.addShit();
+        //TODO : -----------------
+
+        fragCompass = new CompassFragment();
+        fragCompass.addData(data);
+        MapsInitializer.initialize(getApplicationContext());
+        fragMap = new MapViewFragment();
+        fragMap.addData(data);
+
+        viewPager = (CustomViewPager) findViewById(R.id.pager);
+        final TabAdapter adapter = new TabAdapter(getSupportFragmentManager());
+
+        adapter.addFragment(fragCompass);
+        adapter.addFragment(fragMap);
+
+        viewPager.setAdapter(adapter);
+        viewPager.setPagingEnabled(false);
+    }
+
+    /**
+     * Checks if network connection is available
+     * @return
+     */
+    protected boolean isNetworkAvailable() {
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    /**
+     * Checks if location service is enabled
+     * @return
+     */
+    protected boolean isLocationEnabled() {
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        boolean gps;
+        boolean net;
+
+        try {
+            gps = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            net = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception e) {
+            return false;
+        }
+
+        return (gps && net);
+    }
+
+    /**
+     * Opens network settings window
+     */
+    private void openNetworkSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0);
+    }
+
+    /**
+     * Opens location settings window
+     */
+    private void openLocationSettings() {
+        startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
+    }
+
+
+    /**
+     * ------------ Services ------------------
+     */
+
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(LOG_TAG, "service binded!");
@@ -283,27 +364,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             unbindService(mConnection);
             mIsBound = false;
         }
-    }
-
-    @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(LOG_TAG, "onStop");
-        doUnbindService();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        stopService(new Intent(this, GPSLocationService.class));
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
-
-        stopService(new Intent(this, SensorService.class));
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
-
-        prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
-        prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
     }
 
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
@@ -366,46 +426,38 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
-    private void showLoggedInLayout(){
-        data = new AllConnectionData(this);
+    /**
+     * -------------- Click Listener ---------------
+     */
 
-        data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
-        data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
-
-        fragCompass = new CompassFragment();
-        fragCompass.addData(data);
-        fragMap = new MapViewFragment();
-        fragMap.addData(data);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Compass"));
-        tabLayout.addTab(tabLayout.newTab().setText("Map"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        final TabAdapter adapter = new TabAdapter(getSupportFragmentManager());
-
-        adapter.addFragment(fragCompass);
-        adapter.addFragment(fragMap);
-
-        viewPager.setAdapter(adapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });
-
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.toolbar_gps_stat:
+                MainActivity.this.openLocationSettings();
+                break;
+            case R.id.toolbar_net_stat:
+                MainActivity.this.openNetworkSettings();
+                break;
+            case R.id.toolbar_map:
+                showMap.setVisibility(View.GONE);
+                backToCompass.setVisibility(View.VISIBLE);
+                viewPager.setCurrentItem(1);
+                isMapShowed = true;
+                fragMap.updateLocations();
+                break;
+            case R.id.toolbar_back:
+                showMap.setVisibility(View.VISIBLE);
+                backToCompass.setVisibility(View.GONE);
+                isMapShowed = false;
+                viewPager.setCurrentItem(0);
+                break;
+        }
     }
+
+    /**
+     * ----------- Share and Recieve async task stuff ------------------
+     */
 
     public AllConnectionData getData() {
         return data;
@@ -446,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             fragCompass.changeSpinnerData();
-            fragMap.updateLocations();
+            if (isMapShowed) fragMap.updateLocations();
         }
     }
 }

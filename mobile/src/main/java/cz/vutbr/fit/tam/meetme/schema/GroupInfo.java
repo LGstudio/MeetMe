@@ -12,10 +12,11 @@ public class GroupInfo {
     public String hash;
     private List<DeviceInfo> deviceInfoList;
 
-    public List<DeviceInfo> getDeviceInfoList() {
-        if(deviceInfoList==null)
-            deviceInfoList = new ArrayList<>();
+    public GroupInfo(){
+        deviceInfoList = new ArrayList<>();
+    }
 
+    public List<DeviceInfo> getDeviceInfoList() {
         return deviceInfoList;
     }
 

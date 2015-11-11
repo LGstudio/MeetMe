@@ -15,16 +15,16 @@
     <color name="flat_0_dark">#a0a0a0</color>
     <color name="flat_1_light">#6bb0cf</color>
     <color name="flat_1_dark">#568ea5</color>
-    <color name="flat_2_light">#b4b830</color>
-    <color name="flat_2_dark">#90932a</color>
+    <color name="flat_6_light">#b8ad30</color>
+    <color name="flat_6_dark">#93872a</color>
     <color name="flat_3_light">#df2d3b</color>
     <color name="flat_3_dark">#af2532</color>
     <color name="flat_4_light">#e77e23</color>
     <color name="flat_4_dark">#b9651c</color>
-    <color name="flat_5_light">#e58893</color>
-    <color name="flat_5_dark">#b66d74</color>
-    <color name="flat_6_light">#5fcd6c</color>
-    <color name="flat_6_dark">#4aa652</color>
+    <color name="flat_5_light">#e588be</color>
+    <color name="flat_5_dark">#ad5a8b</color>
+    <color name="flat_2_light">#5fcd6c</color>
+    <color name="flat_2_dark">#4aa652</color>
 
     <color name="flat_brightness_difference_dark">#242424</color>
     <color name="flat_brightness_difference_white">#cacaca</color>
