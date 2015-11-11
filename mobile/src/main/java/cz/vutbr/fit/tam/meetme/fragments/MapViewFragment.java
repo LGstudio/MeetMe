@@ -1,22 +1,20 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
 
@@ -61,13 +59,6 @@ public class MapViewFragment extends Fragment {
             e.printStackTrace();
         }
 
-        return v;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mMapView.onResume();
 
         googleMap = mMapView.getMap();
         googleMap.setMyLocationEnabled(true);
@@ -76,6 +67,19 @@ public class MapViewFragment extends Fragment {
         CameraPosition cameraPosition = new CameraPosition.Builder().target(myPos).zoom(14).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            public boolean onMarkerClick(Marker marker) {
+                return true;
+            }
+        });
+
+        return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMapView.onResume();
     }
 
     @Override

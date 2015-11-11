@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
@@ -36,7 +39,7 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  */
 public class CompassFragment extends Fragment implements View.OnClickListener {
 
-    private final static int ROTATION_DURATION = 120;
+    private final static int ROTATION_DURATION = 80;
 
     private View view;
 
@@ -169,6 +172,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                 a.arrow.setColorFilter(c, PorterDuff.Mode.MULTIPLY);
                 a.setRotation(d.bearing);
                 arrowArea.addView(a);
+                arrows.add(a);
             }
         }
     }
@@ -179,13 +183,13 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      */
     public void setDeviceRotation(float x) {
 
-        RotateAnimation r = new RotateAnimation(degree, x, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        RotateAnimation r = new RotateAnimation(degree, -x, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
         r.setDuration(ROTATION_DURATION);
         r.setFillAfter(true);
         arrowArea.startAnimation(r);
 
-        degree = x;
+        degree = -x;
     }
 
     @Override
@@ -287,7 +291,5 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         }
 
     }
-
-
 
 }
