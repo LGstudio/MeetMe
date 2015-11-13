@@ -247,6 +247,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         this.newUrlGroupHash = getIntentData();
         if (newUrlGroupHash != null) {
             Log.d(LOG_TAG, "joining group:" + newUrlGroupHash);
+
+            showNotification();
+
             //join group
             new Thread(new Runnable() {
                 public void run() {
@@ -331,6 +334,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
 
+        dismissNotification();
         doUnbindGroupDataService();
 
         prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
