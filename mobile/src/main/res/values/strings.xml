@@ -13,12 +13,12 @@
     <string name="gps_latitude">gps-latitude</string>
     <string name="gps_longitude">gps-longitude</string>
 
-    <string name="rotation_intent_filter">gps-orientation-event</string>
+    <string name="rotation_intent_filter">device-orientation-event</string>
     <string name="rotation_x">rotation-x</string>
     <string name="rotation_y">rotation-y</string>
     <string name="rotation_z">rotation-z</string>
-    <string name="button_end_connection">Exit Group</string>
-    <string name="button_end_all_connection">Exit All Groups</string>
+    <string name="button_end_connection">Leave Group</string>
+    <string name="button_end_all_connection">Leave All Groups</string>
     <string name="map_me">Me</string>
 
     <string name="pref_last_lon">cz.vutbr.fit.tam.meetme.lastknownlon</string>
@@ -29,9 +29,9 @@
     <string name="share_msg_existing">Invite into group ..</string>
 
     <string name="network_dialog_title">Internet connection is disabled.</string>
-    <string name="network_dialog_text">Do you want to turn it on?</string>
-    <string name="network_dialog_positive">Yes</string>
-    <string name="network_dialog_negative">No</string>
+    <string name="network_dialog_text">Please, check your connection!</string>
+    <string name="network_dialog_positive">Try again</string>
+    <string name="network_dialog_negative">Cancel</string>
 
     <string name="location_dialog_title">Location service is disabled.</string>
     <string name="location_dialog_text">Do you want to turn it on?</string>
@@ -41,4 +41,5 @@
     <string name="googleplay_dialog_title">This device is not supported!</string>
     <string name="googleplay_dialog_text">Google Play Services</string>
     <string name="googleplay_dialog_positive">OK</string>
+    <string name="map_btn">MAP</string>
 </resources>

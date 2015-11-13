@@ -1,9 +1,12 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +19,15 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupLeaveAsyncTask;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
+import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.gui.ArrowView;
@@ -31,8 +37,10 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
  *         <p/>
  *         Fragment that shows the compass.
  */
-public class CompassFragment extends MeetMeFragment implements View.OnClickListener {
-    public static final String LOG_TAG = "CompassFragment";
+public class CompassFragment extends Fragment implements View.OnClickListener {
+
+    private final static int ROTATION_DURATION = 80;
+
     private View view;
 
     private SquareButton addButton;
@@ -43,13 +51,26 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
     public int selectedGroup = 0;
     public int selectedPerson = 0;
 
+    private float degree;
+    
     protected ArrayList<GroupInfo> groups;
     protected ArrayList<DeviceInfo> devices;
+    protected ArrayList<ArrowView> arrows;
+
+    protected AllConnectionData data;
+
+    public void addData(AllConnectionData d){
+        data = d;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_compass, container, false);
         this.view = v;
+
+        arrows = new ArrayList<>();
+
+        degree = 0.0f;
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
         personSpinner = (Spinner) view.findViewById(R.id.list_person);
@@ -66,7 +87,6 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
                 selectedGroup = position;
                 selectedPerson = 0;
                 addDevicesToSpinner();
-                redrawCompass();
             }
 
             @Override
@@ -78,7 +98,7 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedPerson = position;
-                redrawCompass();
+                createArrows();
             }
 
             @Override
@@ -87,20 +107,24 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             }
         });
 
-        changeSpinnerData();
+        updateView();
         createArrows();
 
         return view;
     }
 
     /**
-     * Changes the data in the spinners based on the dara.grops array
+     * Changes the data in the spinners and arrow rotation
+     * based on the dara.grops array
      */
-    public void changeSpinnerData() {
+    public void updateView() {
         groups = (ArrayList<GroupInfo>) data.groups.clone();
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
+        int tmp = selectedPerson;
         groupSpinner.setSelection(selectedGroup);
+        selectedPerson = tmp;
         addDevicesToSpinner();
+        createArrows();
     }
 
     /**
@@ -131,30 +155,41 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
 
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
         personSpinner.setSelection(selectedPerson);
+
     }
 
 
     public void createArrows() {
-        //-------------------
+        for (ArrowView a: arrows){
+            arrowArea.removeView(a);
+        }
+        arrows.clear();
 
-        ArrowView a = new ArrowView(getContext());
-        arrowArea.addView(a);
-
-        RotateAnimation r; // = new RotateAnimation(ROTATE_FROM, ROTATE_TO);
-        r = new RotateAnimation(0.0f, -10.0f * 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        r.setDuration((long) 2 * 1500);
-        r.setRepeatCount(0);
-        a.startAnimation(r);
-
-        //--------------------
+        for (GroupInfo g: groups){
+            int c = getResources().getColor(data.groupColor.get(g.id));
+            for (DeviceInfo d: g.getDeviceInfoList()){
+                ArrowView a = new ArrowView(getContext());
+                a.arrow.setColorFilter(c, PorterDuff.Mode.MULTIPLY);
+                a.setRotation(d.bearing);
+                arrowArea.addView(a);
+                arrows.add(a);
+            }
+        }
     }
 
     /**
-     * Redraws the compass area based on the ArrayList<GroupInfo> groups list.
-     * TODO: AsyncTask to refresh based on data
+     * Called when device rotation is changed
+     * @param x
      */
-    public void redrawCompass() {
+    public void setDeviceRotation(float x) {
 
+        RotateAnimation r = new RotateAnimation(degree, -x, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
+        r.setDuration(ROTATION_DURATION);
+        r.setFillAfter(true);
+        arrowArea.startAnimation(r);
+
+        degree = -x;
     }
 
     @Override
@@ -188,17 +223,15 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         gl.execute();
 
         if (selectedGroup == 0) {
-            GroupInfo base = data.groups.get(0);
-            data.groups = new ArrayList<>();
-            data.groups.add(base);
+            data.initNew();
         }
         else {
-            data.groups.remove(selectedGroup);
+            data.disconnectFromGroup(selectedGroup);
         }
 
         selectedGroup = 0;
         selectedPerson = 0;
-        changeSpinnerData();
+        updateView();
     }
 
     /**
@@ -215,10 +248,8 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
             LayoutInflater inflater = getActivity().getLayoutInflater();
             View spinnerElement = inflater.inflate(R.layout.list_group_line, parent, false);
 
-
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
             groupSizeText.setText(groups.get(position).toString());
-
 
             ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
             Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
@@ -260,7 +291,5 @@ public class CompassFragment extends MeetMeFragment implements View.OnClickListe
         }
 
     }
-
-
 
 }
