@@ -21,6 +21,7 @@
 
     <string name="pref_last_lon">cz.vutbr.fit.tam.meetme.lastknownlon</string>
     <string name="pref_last_lat">cz.vutbr.fit.tam.meetme.lastknownlat</string>
+    <string name="pref_name">cz.vutbr.fit.tam.meetme.username</string>
 
     <string name="share_link">http://meetme.poul.cz/group/</string>
     <string name="share_msg_new">Create new group ..</string>
@@ -40,4 +41,10 @@
     <string name="googleplay_dialog_text">Google Play Services</string>
     <string name="googleplay_dialog_positive">OK</string>
     <string name="map_btn">MAP</string>
+
+    <string name="intro_welcome">WELCOME</string>
+    <string name="intro_to">TO</string>
+    <string name="intro_info">Please enter your name to Start</string>
+    <string name="intro_button">Start</string>
+    <string name="intro_info_warning">Name must be at least 4 characters</string>
 </resources>

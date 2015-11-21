@@ -17,6 +17,7 @@ import cz.vutbr.fit.tam.meetme.R;
  */
 public class AllConnectionData {
 
+    public String myName;
     public double myLatitude;
     public double myLongitude;
     public GroupColor colors;

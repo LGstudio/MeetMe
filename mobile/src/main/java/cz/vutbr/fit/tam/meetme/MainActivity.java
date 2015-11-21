@@ -20,14 +20,21 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -59,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private AllConnectionData data;
 
+    private RelativeLayout toolbar;
     private ImageButton gpsStatus;
     private ImageButton backToCompass;
     private TextView showMap;
@@ -86,12 +94,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
-        if (isLoggedIn){
-            showLoggedInLayout();
-        }
-        else {
-            //TODO: LOGIN SCREEN
-        }
+
+        initLayout();
+
 
         if (!isNetworkAvailable()) {
             MainActivity.this.showNetworkDialog();
@@ -100,11 +105,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         if (isNetworkAvailable() && !isLocationEnabled()) {
             MainActivity.this.showLocationDialog();
         }
-
-        startService(new Intent(this, SensorService.class));
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
-        );
 
         if (checkGooglePlayServices()) {
 
@@ -215,9 +215,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     /**
      * Initializes the layout with default data
      */
-    private void showLoggedInLayout(){
+    private void initLayout(){
 
         resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
+
+        toolbar = (RelativeLayout) findViewById(R.id.toolbar);
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
         showMap = (TextView) findViewById(R.id.toolbar_map);
@@ -227,15 +229,27 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         showMap.setOnClickListener(this);
         backToCompass.setOnClickListener(this);
 
-
         data = new AllConnectionData(this);
 
         data.myLatitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lat), "0.0"));
         data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
 
-        //TODO : REMOVE TEST DATA
-        data.addShit();
-        //TODO : -----------------
+        data.myName = prefs.getString(getString(R.string.pref_name), null);
+
+        viewPager = (CustomViewPager) findViewById(R.id.pager);
+        viewPager.setPagingEnabled(false);
+
+        if (data.myName == null){
+            showWelcome();
+        }
+        else {
+            showLoggedIn();
+        }
+
+    }
+
+    public void showLoggedIn(){
+        toolbar.setVisibility(View.VISIBLE);
 
         fragCompass = new CompassFragment();
         fragCompass.addData(data);
@@ -243,14 +257,22 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         fragMap = new MapViewFragment();
         fragMap.addData(data);
 
-        viewPager = (CustomViewPager) findViewById(R.id.pager);
         final TabAdapter adapter = new TabAdapter(getSupportFragmentManager());
-
         adapter.addFragment(fragCompass);
         adapter.addFragment(fragMap);
-
         viewPager.setAdapter(adapter);
-        viewPager.setPagingEnabled(false);
+
+        startPositionReciever();
+    }
+
+    public void showWelcome(){
+        toolbar.setVisibility(View.GONE);
+
+        WelcomeScreen welcome = new WelcomeScreen();
+
+        final TabAdapter adapter = new TabAdapter(getSupportFragmentManager());
+        adapter.addFragment(welcome);
+        viewPager.setAdapter(adapter);
     }
 
     /**
@@ -459,6 +481,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      * --------------------------------------------------------------------------------
      */
 
+    private void startPositionReciever(){
+        startService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
+        );
+    }
+
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -559,6 +588,51 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             super.onPostExecute(aVoid);
             fragCompass.updateView();
             if (isMapShowed) fragMap.updateLocations();
+        }
+    }
+
+    /**
+     * --------------------------------------------------------------------------------
+     * ----------- Welcome screen to enter username -----------------------------------
+     * --------------------------------------------------------------------------------
+     */
+
+    private class WelcomeScreen extends Fragment implements View.OnClickListener{
+
+        private EditText nameField;
+        private Button button;
+        private TextView information;
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            View v = inflater.inflate(R.layout.fragment_welcome, container, false);
+
+            button = (Button) v.findViewById(R.id.welcome_ok_button);
+            button.setOnClickListener(this);
+            nameField = (EditText) v.findViewById(R.id.welcome_name_field);
+            information = (TextView) v.findViewById(R.id.welcome_information);
+
+            return v;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v.getId() == R.id.welcome_ok_button){
+                String name = nameField.getText().toString();
+
+                if (name.length() < 5 ){
+                    information.setText(getString(R.string.intro_info_warning));
+                    information.setTextColor(getResources().getColor(R.color.indication_bad));
+                }
+                else {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+
+                    data.myName = name;
+                    prefs.edit().putString(getString(R.string.pref_name), name).apply();
+                    showLoggedIn();
+                }
+            }
         }
     }
 }
