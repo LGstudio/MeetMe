@@ -85,6 +85,12 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 selectedGroup = position;
+                if (selectedGroup == 0){
+                    leaveButton.setVisibility(View.INVISIBLE);
+                }
+                else {
+                    leaveButton.setVisibility(View.VISIBLE);
+                }
                 selectedPerson = 0;
                 addDevicesToSpinner();
             }
@@ -145,12 +151,10 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                     devices.add(d);
                 }
             }
-            leaveButton.setText(getString(R.string.button_end_all_connection));
         } else {
             for (DeviceInfo d : groups.get(selectedGroup).getDeviceInfoList()) {
                 devices.add(d);
             }
-            leaveButton.setText(getString(R.string.button_end_connection));
         }
 
         personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
@@ -170,6 +174,8 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             for (DeviceInfo d: g.getDeviceInfoList()){
                 ArrowView a = new ArrowView(getContext());
                 a.arrow.setColorFilter(c, PorterDuff.Mode.MULTIPLY);
+                a.contactName.setText(d.name);
+                a.contectDistance.setText(d.getDistance());
                 a.setRotation(d.bearing);
                 arrowArea.addView(a);
                 arrows.add(a);

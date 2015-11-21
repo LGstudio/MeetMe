@@ -1,7 +1,7 @@
 package cz.vutbr.fit.tam.meetme.schema;
 
 /**
- * Created by Lada on 13.10.2015.
+ * @author Vlada Svoboda, Gabriel Lehocky
  */
 public class DeviceInfo {
     public Integer id;
@@ -14,20 +14,20 @@ public class DeviceInfo {
 
     @Override
     public String toString(){
-        return name + " (" + getDistance() + ")";
+        return name;
     }
 
     public String getDistance(){
         if (distance < 1000){
-            return String.format("%.0f", distance) + "m";
+            return String.format("%.0f", distance) + "\nm";
         }
         else if (distance < 10000){
-            return String.format("%.2f", distance/1000) + "km" ;
+            return String.format("%.2f", distance/1000) + "\nkm" ;
         }
         else if (distance < 100000){
-            return String.format("%.1f", distance/1000) + "km" ;
+            return String.format("%.1f", distance/1000) + "\nkm" ;
         }
 
-        return String.format("%.0f", distance/1000) + "km" ;
+        return String.format("%.0f", distance/1000) + "\nkm" ;
     }
 }

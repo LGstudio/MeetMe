@@ -71,7 +71,7 @@ public class AllConnectionData {
         allGroup.id = 0;
         groups.add(allGroup);
 
-        groupColor.put(0, R.color.flat_brightness_difference_dark);
+        groupColor.put(0, R.color.flat_brightness_difference_light);
 
 
    }

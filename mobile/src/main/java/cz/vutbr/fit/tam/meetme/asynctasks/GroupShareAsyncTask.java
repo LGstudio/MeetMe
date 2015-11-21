@@ -70,7 +70,7 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
         intent2.setType("text/plain");
         intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent2.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
-        MainActivity.getActivity().startActivity(Intent.createChooser(intent2, this.shareMsg + " (" + this.group.id + ")"));
+        MainActivity.getActivity().startActivity(Intent.createChooser(intent2, this.shareMsg));
 
     }
 

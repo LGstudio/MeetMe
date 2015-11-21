@@ -19,13 +19,6 @@
             android:layout_alignParentEnd="true">
 
             <ImageButton
-                android:id="@+id/toolbar_net_stat"
-                android:layout_width="?attr/actionBarSize"
-                android:layout_height="?attr/actionBarSize"
-                android:src="@drawable/ic_net"
-                android:background="@color/transparent"/>
-
-            <ImageButton
                 android:id="@+id/toolbar_gps_stat"
                 android:layout_width="?attr/actionBarSize"
                 android:layout_height="?attr/actionBarSize"
@@ -43,7 +36,6 @@
                 android:id="@+id/toolbar_map"
                 android:layout_width="?attr/actionBarSize"
                 android:layout_height="?attr/actionBarSize"
-                android:src="@drawable/ic_net"
                 android:background="@color/transparent"
                 android:text="@string/map_btn"
                 android:textColor="@color/bckColor"

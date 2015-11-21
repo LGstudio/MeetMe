@@ -17,15 +17,13 @@
     <string name="rotation_x">rotation-x</string>
     <string name="rotation_y">rotation-y</string>
     <string name="rotation_z">rotation-z</string>
-    <string name="button_end_connection">Leave Group</string>
-    <string name="button_end_all_connection">Leave All Groups</string>
     <string name="map_me">Me</string>
 
     <string name="pref_last_lon">cz.vutbr.fit.tam.meetme.lastknownlon</string>
     <string name="pref_last_lat">cz.vutbr.fit.tam.meetme.lastknownlat</string>
 
     <string name="share_link">http://meetme.poul.cz/group/</string>
-    <string name="share_msg_new">Invite into new group ..</string>
+    <string name="share_msg_new">Create new group ..</string>
     <string name="share_msg_existing">Invite into group ..</string>
 
     <string name="network_dialog_title">Internet connection is disabled.</string>

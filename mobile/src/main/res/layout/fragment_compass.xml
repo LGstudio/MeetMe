@@ -71,22 +71,22 @@
         android:weightSum="1"
         android:gravity="center_vertical|center_horizontal">
 
-        <Button
+        <cz.vutbr.fit.tam.meetme.gui.SquareButton
             android:id="@+id/button_exit"
             android:layout_width="0dp"
-            android:layout_weight="0.75"
+            android:layout_weight="0.15"
             android:layout_height="@dimen/add_button_size"
             android:textSize="@dimen/button_text_height"
             android:layout_gravity="center"
             android:textColor="@color/bckColor"
-            android:text="@string/button_end_connection"
-            android:background="@color/end_button_bck_1"
+            android:text="X"
+            android:background="@drawable/button_exit"
             />
 
         <android.widget.Space
             android:layout_width="0dp"
             android:layout_height="fill_parent"
-            android:layout_weight="0.1"/>
+            android:layout_weight="0.60"/>
 
         <cz.vutbr.fit.tam.meetme.gui.SquareButton
         android:id="@+id/button_add"

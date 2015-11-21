@@ -15,7 +15,7 @@ import cz.vutbr.fit.tam.meetme.R;
  */
 public class ArrowView extends LinearLayout{
 
-    public TextView distance;
+    public TextView contectDistance;
     public ImageView arrow;
     public TextView contactName;
 
@@ -40,9 +40,11 @@ public class ArrowView extends LinearLayout{
         setGravity(Gravity.CENTER_HORIZONTAL);
         setOrientation(VERTICAL);
 
-        setLayoutParams(new ArrowView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
+        setLayoutParams(new ArrowView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         arrow = (ImageView) findViewById(R.id.arrow);
+        contactName = (TextView) findViewById(R.id.arrow_name);
+        contectDistance = (TextView) findViewById(R.id.arrow_distance);
 
     }
 }

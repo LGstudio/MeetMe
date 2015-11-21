@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private AllConnectionData data;
 
     private ImageButton gpsStatus;
-    private ImageButton netStatus;
     private ImageButton backToCompass;
     private TextView showMap;
 
@@ -221,11 +220,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
-        netStatus = (ImageButton) findViewById(R.id.toolbar_net_stat);
         showMap = (TextView) findViewById(R.id.toolbar_map);
         backToCompass = (ImageButton) findViewById(R.id.toolbar_back);
 
-        netStatus.setOnClickListener(this);
         gpsStatus.setOnClickListener(this);
         showMap.setOnClickListener(this);
         backToCompass.setOnClickListener(this);
@@ -385,13 +382,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
     /**
-     * Opens network settings window
-     */
-    private void openNetworkSettings() {
-        startActivityForResult(new Intent(Settings.ACTION_SETTINGS), 0);
-    }
-
-    /**
      * Opens location settings window
      */
     private void openLocationSettings() {
@@ -506,9 +496,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         switch (v.getId()){
             case R.id.toolbar_gps_stat:
                 MainActivity.this.openLocationSettings();
-                break;
-            case R.id.toolbar_net_stat:
-                MainActivity.this.openNetworkSettings();
                 break;
             case R.id.toolbar_map:
                 showMap.setVisibility(View.GONE);

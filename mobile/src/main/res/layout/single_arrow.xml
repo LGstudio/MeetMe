@@ -1,25 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge
+<LinearLayout
+    android:layout_height="fill_parent"
+    android:layout_width="fill_parent"
+    android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+    android:weightSum="1">
 
     <Space
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.082"/>
+        android:layout_weight="0.032"/>
 
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.05"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:textColor="@color/flat_brightness_difference_dark"
+        android:id="@+id/arrow_name"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal|bottom"/>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2">
 
         <ImageView
             android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.2"
+            android:layout_height="fill_parent"
             android:src="@drawable/ic_arrow"
             android:id="@+id/arrow"
             />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/arrow_distance"
+            android:text="0\nm"
+            android:textColor="@color/flat_brightness_difference_dark"
+            android:gravity="bottom|center_horizontal"
+            android:paddingBottom="13dp"/>
+
+    </RelativeLayout>
 
     <Space
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="0.72"/>
 
-</merge>
+</LinearLayout>
