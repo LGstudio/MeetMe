@@ -140,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
 
+        dismissNotification();
         doUnbindService();
 
         prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
