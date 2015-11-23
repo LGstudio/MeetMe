@@ -1,14 +1,24 @@
 package cz.vutbr.fit.tam.meetme;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import cz.vutbr.fit.tam.meetme.service.DataReceiverService;
+import cz.vutbr.fit.tam.meetme.service.SensorService;
+
 
 public class MainActivity extends WearableActivity {
 
@@ -27,6 +37,27 @@ public class MainActivity extends WearableActivity {
 
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
+
+        startService(new Intent(this, DataReceiverService.class));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                handheldDataReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
+        );
+
+        startService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                positionReceiver, new IntentFilter(this.getString(R.string.data_intent_filter))
+        );
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        stopService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        stopService(new Intent(this, DataReceiverService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(handheldDataReceiver);
     }
 
     @Override
@@ -60,4 +91,27 @@ public class MainActivity extends WearableActivity {
             mClockView.setVisibility(View.GONE);
         }
     }
+
+    private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // TODO: reimplement service
+        }
+    };
+
+    private BroadcastReceiver handheldDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // TODO: add to ArrayList<ConnectionData>
+
+            String name = intent.getStringExtra("name");
+            int groupId = Integer.parseInt(intent.getStringExtra("groupId"));
+            float bearing = Float.parseFloat(intent.getStringExtra("bearing"));
+            float distance = Float.parseFloat(intent.getStringExtra("distance"));
+
+            Log.d("DEBUG", name + " " + groupId + " " + bearing + " " + distance);
+        }
+    };
 }

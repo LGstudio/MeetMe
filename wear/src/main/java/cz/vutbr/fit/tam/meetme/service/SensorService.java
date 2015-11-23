@@ -3,18 +3,18 @@ package cz.vutbr.fit.tam.meetme.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import cz.vutbr.fit.tam.meetme.R;
 
 /**
- * Created by Jakub on 21. 10. 2015.
+ * Created by Jakub on 22. 11. 2015.
  */
 public class SensorService extends Service implements SensorEventListener {
 

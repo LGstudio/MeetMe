@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">MeetMe</string>
     <string name="hello_world">Hello World!</string>
+
+    <string name="rotation_intent_filter">wearable-orientation-event</string>
+    <string name="rotation_x">wearable-rotation-x</string>
+
+    <string name="data_intent_filter">wearable--data-received-event</string>
 </resources>
