@@ -67,7 +67,7 @@ public class DataReceiverService extends WearableListenerService {
                 Context context = getApplicationContext();
 
                 for (DataMap data : dataMapList) {
-                    Intent intent = new Intent(context.getString(R.string.data_intent_filter));
+                    Intent intent = new Intent(context.getString(R.string.wear_data_intent_filter));
                     intent.putExtra("name", data.getString("name"));
                     intent.putExtra("groupId", data.getInt("groupId"));
                     intent.putExtra("bearing", data.getFloat("bearing"));

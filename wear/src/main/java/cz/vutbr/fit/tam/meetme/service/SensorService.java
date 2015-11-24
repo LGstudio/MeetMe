@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import cz.vutbr.fit.tam.meetme.R;
 
@@ -57,6 +58,7 @@ public class SensorService extends Service implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         mSensorManager.unregisterListener(this);
+        this.stopSelf();
     }
 
     @Override
@@ -86,7 +88,7 @@ public class SensorService extends Service implements SensorEventListener {
 
         Context context = getApplicationContext();
 
-        Intent intent = new Intent(context.getString(R.string.rotation_intent_filter));
+        Intent intent = new Intent(context.getString(R.string.wear_rotation_intent_filter));
         intent.putExtra(context.getString(R.string.rotation_x), Float.toString(azimuth));
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -98,7 +100,7 @@ public class SensorService extends Service implements SensorEventListener {
 
     private float[] lowPassFilter(float[] input, float[] output) {
 
-        float a = 0.25f;
+        float a = 0.3f;
 
         if (output == null || output.length == 0) {
             return input;

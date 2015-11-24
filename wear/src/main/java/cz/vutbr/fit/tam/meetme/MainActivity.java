@@ -29,6 +29,9 @@ public class MainActivity extends WearableActivity {
     private TextView mTextView;
     private TextView mClockView;
 
+    Intent sensorIntent;
+    Intent dataIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,15 +41,29 @@ public class MainActivity extends WearableActivity {
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
 
-        startService(new Intent(this, DataReceiverService.class));
+        dataIntent = new Intent(this, DataReceiverService.class);
+        startService(dataIntent);
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                handheldDataReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
+                handheldDataReceiver, new IntentFilter(this.getString(R.string.wear_data_intent_filter))
         );
 
-        startService(new Intent(this, SensorService.class));
+        sensorIntent = new Intent(this, SensorService.class);
+        startService(sensorIntent);
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                positionReceiver, new IntentFilter(this.getString(R.string.data_intent_filter))
+                positionReceiver, new IntentFilter(this.getString(R.string.wear_rotation_intent_filter))
         );
+    }
+
+    @Override
+    protected void onResume() {
+        startService(sensorIntent);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        stopService(sensorIntent);
+        super.onPause();
     }
 
     @Override
@@ -95,8 +112,7 @@ public class MainActivity extends WearableActivity {
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            // TODO: reimplement service
+            float x = Float.parseFloat(intent.getStringExtra(context.getString(R.string.rotation_x)));
         }
     };
 
