@@ -45,6 +45,10 @@ public class GetGroupDataService extends Service {
         return localBinder;
     }
 
+    public String getGroupHash() {
+        return groupHash;
+    }
+
     public void sendMessageActivity(final GroupInfo  gi){
         //Log.i(LOG_TAG, "group info: " + gi.toString());
         MainActivity.getActivity().runOnUiThread(new Runnable() {

@@ -46,13 +46,29 @@ public class RequestCrafter implements RequestCrafterInterface{
 
     public final String REST_GROUP_DETACH = REST_HOST_URL +"/group-detach/{"+REST_GROUP_DATA_ID_DEV+"}/{"+REST_GROUP_DATA_GROUP_HASH+"}/";
 
+    public static final int OK = 0;
+    public static final int GENERAL_ERROR = 20001;
+    public static final int GENERAL_PERSISTENCE_ERROR = 20002;
+    public static final int ACCESS_DENIED = 20004;
+
+    public static final int RECORD_NOT_FOUND = 50003;
+    public static final int RECORD_ALREADY_EXISTS = 50004;
+    public static final int MORE_RECORDS_FOUND = 50005;
+
+    public static final int DEVICE_NOT_FOUND = 60001;
+    public static final int GROUP_NOT_FOUND = 60002;
+    public static final int DEVICE_ALREADY_ATTACHED = 60003;
+    public static final int DEVICE_NOT_ATTACHED = 60004;
+
 
     private String userAgent;
+    private String username;
     private Context context;
     private Integer id;
 
-    public RequestCrafter(String userAgent, Context context) {
+    public RequestCrafter(String userAgent, String username, Context context) {
         this.userAgent = userAgent;
+        this.username = username;
         this.context = context;
         this.id = null;
     }
@@ -87,6 +103,7 @@ public class RequestCrafter implements RequestCrafterInterface{
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userAgent", this.userAgent);
+        body.add("name", this.username);
 
         DeviceResponseInfo di = (DeviceResponseInfo) createRestRequestPrivate(DeviceResponseInfo.class, HttpMethod.POST, REST_INSTALL, null, body);
 
@@ -148,7 +165,10 @@ public class RequestCrafter implements RequestCrafterInterface{
 
         GroupResponseInfo gri = (GroupResponseInfo) createRestRequestPrivate(GroupResponseInfo.class, HttpMethod.POST, REST_GROUP_ATTACH, urlParams, body);
 
-        if(gri.getErrorCode() != 0)
+        if(gri.getErrorCode() == DEVICE_ALREADY_ATTACHED) {
+            restGroupData(groupHash, location);
+        }
+        else if(gri.getErrorCode() != 0)
             throw new InternalErrorException(gri.getErrorMessage());
 
         return gri.groupInfo;//getGroupInfo();
