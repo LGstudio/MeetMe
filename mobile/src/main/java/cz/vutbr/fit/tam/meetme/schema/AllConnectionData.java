@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.location.Location;
 import android.location.LocationManager;
 
+import com.google.android.gms.wearable.DataMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +32,27 @@ public class AllConnectionData {
         parent = a;
 
         initNew();
+    }
+
+    public ArrayList<DataMap> getDataMap() {
+        ArrayList<DataMap> allData = new ArrayList<>();
+
+        for (GroupInfo group : groups) {
+            int groupId = group.id;
+
+            for (DeviceInfo device : group.getDeviceInfoList()) {
+
+                DataMap data = new DataMap();
+                data.putString("name", device.name);
+                data.putInt("groupId", groupId);
+                data.putFloat("distance", device.distance);
+                data.putFloat("bearing",  device.bearing);
+
+                allData.add(data);
+            }
+        }
+
+        return allData;
     }
 
     /**
