@@ -17,4 +17,14 @@ public class ConnectionData {
         this.bearing = bearing;
         this.distance = distance;
     }
+
+    public boolean isSame(String n) {
+        return name.equals(n);
+    }
+
+    public void updateData(int groupId, float bearing, float distance) {
+        this.groupId = groupId;
+        this.bearing = bearing;
+        this.distance = distance;
+    }
 }

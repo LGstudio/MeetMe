@@ -13,9 +13,11 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
+import cz.vutbr.fit.tam.meetme.schema.ConnectionData;
 import cz.vutbr.fit.tam.meetme.service.DataReceiverService;
 import cz.vutbr.fit.tam.meetme.service.SensorService;
 
@@ -28,6 +30,8 @@ public class MainActivity extends WearableActivity {
     private BoxInsetLayout mContainerView;
     private TextView mTextView;
     private TextView mClockView;
+
+    ArrayList<ConnectionData> data;
 
     Intent sensorIntent;
     Intent dataIntent;
@@ -120,14 +124,27 @@ public class MainActivity extends WearableActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            // TODO: add to ArrayList<ConnectionData>
-
             String name = intent.getStringExtra("name");
             int groupId = Integer.parseInt(intent.getStringExtra("groupId"));
             float bearing = Float.parseFloat(intent.getStringExtra("bearing"));
             float distance = Float.parseFloat(intent.getStringExtra("distance"));
 
-            Log.d("DEBUG", name + " " + groupId + " " + bearing + " " + distance);
+            boolean updated = false;
+
+            for (ConnectionData d : data) {
+
+                if (d.isSame(name)) {
+                    d.updateData(groupId, bearing, distance);
+                    updated = true;
+                    break;
+                }
+            }
+
+            if (!updated) {
+                data.add(new ConnectionData(name, groupId, bearing, distance));
+            }
+
+            // TODO: remove item
         }
     };
 }

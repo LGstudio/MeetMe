@@ -2,12 +2,15 @@ package cz.vutbr.fit.tam.meetme.service;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
@@ -21,6 +24,7 @@ import cz.vutbr.fit.tam.meetme.R;
 public class DataReceiverService extends WearableListenerService {
 
     GoogleApiClient mGoogleApiClient;
+    boolean connected;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -72,8 +76,25 @@ public class DataReceiverService extends WearableListenerService {
                     intent.putExtra("groupId", data.getInt("groupId"));
                     intent.putExtra("bearing", data.getFloat("bearing"));
                     intent.putExtra("distance", data.getFloat("distance"));
+
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                 }
             }
         }
+    }
+
+    @Override
+    public void onPeerConnected(Node peer) {
+        super.onPeerConnected(peer);
+        connected = true;
+        // TODO: send to mobile
+    }
+
+    @Override
+    public void onPeerDisconnected(Node peer) {
+        super.onPeerDisconnected(peer);
+        connected = false;
+        // TODO: send to mobile
+        // TODO: show sth
     }
 }
