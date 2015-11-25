@@ -38,10 +38,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 
 import java.util.List;
 
+import cz.vutbr.fit.tam.meetme.asynctasks.WearableSendAsyncTask;
 import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.fragments.*;
 import cz.vutbr.fit.tam.meetme.requestcrafter.RequestCrafter;
@@ -78,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private static MainActivity activity;
     private static SharedPreferences prefs;
 
+    private GoogleApiClient googleApiClient;
+    private boolean wearableConnected;
+
     /**
      * --------------------------------------------------------------------------------
      * ------------- Activity Lifecycle -----------------------------------------------
@@ -90,11 +97,23 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setContentView(R.layout.activity_main);
         this.activity = this;
 
+        if (checkGooglePlayServices()) {
+
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Wearable.API)
+                    .build();
+
+            if (!googleApiClient.isConnected())
+                googleApiClient.connect();
+        }
+
+        wearableConnected = false;
+        new WearConnectionAsyncTask(googleApiClient).execute();
+
         prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
 
         initLayout();
-
 
         if (!isNetworkAvailable()) {
             MainActivity.this.showNetworkDialog();
@@ -118,19 +137,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onResume();
         Log.d("GetGroupDataService", "onResume");
         handleOpenViaUrl();
-
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(LOG_TAG, "onStop");
-        doUnbindService();
-    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        if (googleApiClient != null && googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
 
         stopService(new Intent(this, GPSLocationService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsReceiver);
@@ -138,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
 
+        dismissNotification();
         doUnbindService();
 
         prefs.edit().putString(getString(R.string.pref_last_lat), String.valueOf(data.myLatitude)).apply();
@@ -168,12 +185,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         loc.setLongitude(MainActivity.this.data.myLongitude);
 
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
+                        MainActivity.this.showNotification();
+                        doBindService(MainActivity.this.newUrlGroupHash);
                     }
                     catch(InternalErrorException e){
                         Log.e(LOG_TAG, e.getMessage());
                     }
-
-                    doBindService(MainActivity.this.newUrlGroupHash);
                 }
             }).start();
         }
@@ -215,8 +232,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      */
     private void initLayout(){
 
-        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
-
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
@@ -245,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             showWelcome();
         }
         else {
+            resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), data.myName, this.getApplicationContext());
             showLoggedIn();
         }
 
@@ -264,7 +280,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         adapter.addFragment(fragMap);
         viewPager.setAdapter(adapter);
 
-        startPositionReciever();
+        startPositionReceiver();
+
+        if (wearableConnected) {
+            new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
+        }
     }
 
     public void showWelcome(){
@@ -477,13 +497,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
+    public GetGroupDataService.MyLocalBinder getBinder() {
+        return binder;
+    }
+
     /**
      * --------------------------------------------------------------------------------
      * -------------- Broadcast Receivers ---------------------------------------------
      * --------------------------------------------------------------------------------
      */
 
-    private void startPositionReciever(){
+    private void startPositionReceiver(){
         startService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
@@ -494,14 +518,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            String str_x = intent.getStringExtra(context.getString(R.string.rotation_x));
-            //String str_y = intent.getStringExtra(context.getString(R.string.rotation_y));
-            //String str_z = intent.getStringExtra(context.getString(R.string.rotation_z));
-
-            float x = Float.parseFloat(str_x);
-            //float y = Float.parseFloat(str_y);
-            //float z = Float.parseFloat(str_z);
-
+            float x = Float.parseFloat(intent.getStringExtra(context.getString(R.string.rotation_x)));
             fragCompass.setDeviceRotation(x);
         }
     };
@@ -513,6 +530,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
             data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
+            if (wearableConnected) {
+                new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
+            }
         }
     };
 
@@ -569,6 +589,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void showGroupData(GroupInfo g){
         GroupUpdaterTask groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
+
+        if (wearableConnected) {
+            new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
+        }
     }
 
     private class GroupUpdaterTask extends AsyncTask<Void,Void,Void>{
@@ -591,6 +615,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             fragCompass.updateView();
             if (isMapShowed) fragMap.updateLocations();
         }
+
+
     }
 
     /**
@@ -622,7 +648,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if (v.getId() == R.id.welcome_ok_button){
                 String name = nameField.getText().toString();
 
-                if (name.length() < 5 ){
+                if (name.length() < 1 ){
                     information.setText(getString(R.string.intro_info_warning));
                     information.setTextColor(getResources().getColor(R.color.indication_bad));
                 }
@@ -635,6 +661,30 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     showLoggedIn();
                 }
             }
+        }
+
+
+    }
+
+    /**
+     * --------------------------------------------------------------------------------
+     * ----------- Wearable connection check and listeners ----------------------------
+     * --------------------------------------------------------------------------------
+     */
+    public class WearConnectionAsyncTask extends AsyncTask<Void,Void,Void> {
+
+        GoogleApiClient googleApiClient;
+
+        public WearConnectionAsyncTask(GoogleApiClient googleApiClient) {
+            this.googleApiClient = googleApiClient;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+            wearableConnected = (nodes != null && nodes.getNodes().size() > 0);
+            return null;
         }
     }
 }

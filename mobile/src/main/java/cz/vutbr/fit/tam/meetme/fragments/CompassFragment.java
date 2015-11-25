@@ -40,6 +40,7 @@ import cz.vutbr.fit.tam.meetme.gui.ArrowView;
 public class CompassFragment extends Fragment implements View.OnClickListener {
 
     private final static int ROTATION_DURATION = 80;
+    private static final String LOG_TAG = "CompassFragment";
 
     private View view;
 
@@ -90,9 +91,45 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                 }
                 else {
                     leaveButton.setVisibility(View.VISIBLE);
+                    this.handleServiceSwitch();
                 }
                 selectedPerson = 0;
                 addDevicesToSpinner();
+            }
+
+            private void handleServiceSwitch() {
+                GroupInfo gi = groups.get(selectedGroup);
+                String selectedGroupHash = gi.hash;
+
+                if(MainActivity.getActivity().getBinder() == null){
+                    Log.d(LOG_TAG, "binder is null");
+
+                    //null takze zadna service nebezela -> zapnem service
+
+                    //show notification that meetme is running
+                    MainActivity.getActivity().showNotification();
+
+                    //bind to new service
+                    MainActivity.getActivity().doBindService(selectedGroupHash);
+
+                }else if(selectedGroupHash.equals(MainActivity.getActivity().getBinder().getService().getGroupHash())){
+                    //selectnuta skupina je rovna ty pro kterou service prave bezi, nic nedelame
+                    Log.d(LOG_TAG, "same group selected");
+                }
+                else{
+                    //prepojeni na novou skupinu
+                    Log.d(LOG_TAG, "joining to new group");
+
+                    MainActivity.getActivity().doUnbindService();
+
+                    //show notification that meetme is running
+                    MainActivity.getActivity().showNotification();
+
+                    //bind to new service
+                    MainActivity.getActivity().doBindService(selectedGroupHash);
+                }
+
+
             }
 
             @Override

@@ -3,6 +3,7 @@ package cz.vutbr.fit.tam.meetme.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,7 +15,7 @@ import android.util.Log;
 import cz.vutbr.fit.tam.meetme.R;
 
 /**
- * Created by Jakub on 21. 10. 2015.
+ * Created by Jakub on 22. 11. 2015.
  */
 public class SensorService extends Service implements SensorEventListener {
 
@@ -87,7 +88,7 @@ public class SensorService extends Service implements SensorEventListener {
 
         Context context = getApplicationContext();
 
-        Intent intent = new Intent(context.getString(R.string.rotation_intent_filter));
+        Intent intent = new Intent(context.getString(R.string.wear_rotation_intent_filter));
         intent.putExtra(context.getString(R.string.rotation_x), Float.toString(azimuth));
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -99,7 +100,7 @@ public class SensorService extends Service implements SensorEventListener {
 
     private float[] lowPassFilter(float[] input, float[] output) {
 
-        float a = 0.25f;
+        float a = 0.3f;
 
         if (output == null || output.length == 0) {
             return input;
