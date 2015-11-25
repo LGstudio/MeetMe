@@ -15,8 +15,9 @@
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true">
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/toolbar_gps_stat"
@@ -24,13 +25,6 @@
                 android:layout_height="?attr/actionBarSize"
                 android:src="@drawable/ic_gps"
                 android:background="@color/transparent"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true">
 
             <TextView
                 android:id="@+id/toolbar_map"
@@ -43,15 +37,19 @@
                 android:clickable="true"
                 android:textStyle="bold"/>
 
-            <ImageButton
-                android:id="@+id/toolbar_back"
-                android:layout_width="?attr/actionBarSize"
-                android:layout_height="?attr/actionBarSize"
-                android:src="@drawable/ic_back"
-                android:background="@color/transparent"
-                android:visibility="gone"/>
 
         </LinearLayout>
+
+
+        <ImageButton
+            android:id="@+id/toolbar_back"
+            android:layout_width="?attr/actionBarSize"
+            android:layout_height="?attr/actionBarSize"
+            android:src="@drawable/ic_back"
+            android:background="@color/transparent"
+            android:visibility="gone"
+            android:layout_alignParentStart="true"/>
+
 
     </RelativeLayout>
 
