@@ -57,8 +57,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public static final String GROUP_HASH="group_hash";
     private final int NOTIFICATION_ID = 1;
 
-    private boolean isLoggedIn = true;
-
     private boolean isMapShowed = false;
     private CompassFragment fragCompass;
     private MapViewFragment fragMap;
@@ -235,6 +233,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         data.myLongitude = Double.parseDouble(prefs.getString(getString(R.string.pref_last_lon), "0.0"));
 
         data.myName = prefs.getString(getString(R.string.pref_name), null);
+
+        //TODO : REMOVE TEST DATA
+        data.addShit();
+        //TODO : -----------------
 
         viewPager = (CustomViewPager) findViewById(R.id.pager);
         viewPager.setPagingEnabled(false);
