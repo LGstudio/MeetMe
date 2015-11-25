@@ -35,7 +35,7 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
-        if (selectedGroup == 0 || data.groups.get(selectedGroup) == null) {
+        if (selectedGroup == -1 || data.groups.get(selectedGroup) == null) {
             try {
                 this.loc.setLatitude(MainActivity.getActivity().getData().myLatitude);
                 this.loc.setLongitude(MainActivity.getActivity().getData().myLongitude);

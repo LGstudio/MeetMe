@@ -8,34 +8,20 @@
     tools:context=".MainActivity$PlaceholderFragment"
     android:weightSum="1">
 
-    <LinearLayout
+
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.15"
-        android:weightSum="1">
+        android:layout_weight="0.15">
 
         <Spinner
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="?attr/actionBarSize"
             android:id="@+id/list_group"
-            android:layout_weight="0.32"
             android:background="@color/bckGray"
-            />
+            android:layout_centerInParent="true"/>
 
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.04"/>
-
-        <Spinner
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/list_person"
-            android:layout_weight="0.64"
-            android:background="@color/bckGray"
-            />
-
-    </LinearLayout>
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="fill_parent"

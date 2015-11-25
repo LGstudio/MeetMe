@@ -5,42 +5,47 @@
     android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:minHeight="?attr/actionBarSize"
     android:paddingTop="@dimen/spinner_divider_height"
     android:paddingBottom="@dimen/spinner_divider_height"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:layout_centerVertical="true">
 
     <Space
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.1"/>
+        android:layout_weight="0.05"/>
 
-    <ImageView
+    <cz.vutbr.fit.tam.meetme.gui.SquareImageView
         android:id="@+id/list_group_item_img"
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:src="@drawable/list_group_none"
-        android:layout_weight="0.35"
+        android:background="@color/flat_brightness_difference_light"
+        android:layout_weight="0.1"
         android:layout_alignParentTop="true"
         android:adjustViewBounds="true"
-        android:scaleType="centerInside"/>
+        android:scaleType="centerInside"
+        />
 
     <Space
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.1"/>
+        android:layout_weight="0.05"/>
 
     <TextView
         android:id="@+id/list_group_item_text"
         android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:gravity="left"
         android:textColor="@color/flat_brightness_difference_dark"
         android:text=""
-        android:layout_weight="0.35"/>
+        android:singleLine="true"
+        android:layout_weight="0.75"
+        android:layout_gravity="center"/>
 
     <Space
         android:layout_width="0dp"
         android:layout_height="fill_parent"
-        android:layout_weight="0.1"/>
+        android:layout_weight="0.05"/>
 
 </LinearLayout>

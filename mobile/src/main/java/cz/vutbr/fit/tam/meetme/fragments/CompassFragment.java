@@ -26,7 +26,9 @@ import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupLeaveAsyncTask;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
+import cz.vutbr.fit.tam.meetme.gui.RoundImageView;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
+import cz.vutbr.fit.tam.meetme.gui.SquareImageView;
 import cz.vutbr.fit.tam.meetme.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
@@ -48,14 +50,10 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     private Button leaveButton;
     private RelativeLayout arrowArea;
     private Spinner groupSpinner;
-    private Spinner personSpinner;
-    public int selectedGroup = 0;
-    public int selectedPerson = 0;
 
     private float degree;
     
     protected ArrayList<GroupInfo> groups;
-    protected ArrayList<DeviceInfo> devices;
     protected ArrayList<ArrowView> arrows;
 
     protected AllConnectionData data;
@@ -74,7 +72,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         degree = 0.0f;
 
         groupSpinner = (Spinner) view.findViewById(R.id.list_group);
-        personSpinner = (Spinner) view.findViewById(R.id.list_person);
         arrowArea = (RelativeLayout) view.findViewById(R.id.arrow_area);
         addButton = (SquareButton) view.findViewById(R.id.button_add);
         leaveButton = (Button) view.findViewById(R.id.button_exit);
@@ -85,20 +82,14 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         groupSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedGroup = position;
-                if (selectedGroup == 0){
-                    leaveButton.setVisibility(View.INVISIBLE);
-                }
-                else {
-                    leaveButton.setVisibility(View.VISIBLE);
-                    this.handleServiceSwitch();
-                }
-                selectedPerson = 0;
-                addDevicesToSpinner();
+                data.selectedGroup = position;
+                leaveButton.setVisibility(View.VISIBLE);
+                this.handleServiceSwitch();
+                createArrows();
             }
 
             private void handleServiceSwitch() {
-                GroupInfo gi = groups.get(selectedGroup);
+                GroupInfo gi = groups.get(data.selectedGroup);
                 String selectedGroupHash = gi.hash;
 
                 if(MainActivity.getActivity().getBinder() == null){
@@ -137,18 +128,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
 
             }
         });
-        personSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedPerson = position;
-                createArrows();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         updateView();
         createArrows();
@@ -162,41 +141,18 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      */
     public void updateView() {
         groups = (ArrayList<GroupInfo>) data.groups.clone();
-        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
-        int tmp = selectedPerson;
-        groupSpinner.setSelection(selectedGroup);
-        selectedPerson = tmp;
-        addDevicesToSpinner();
-        createArrows();
-    }
-
-    /**
-     * Adds the connected Devices into spinner
-     * based on the ArrayList<GroupInfo> groups list.
-     */
-    public void addDevicesToSpinner() {
-
-        devices = new ArrayList<>();
-        DeviceInfo all = new DeviceInfo();
-        all.id = 0;
-        all.name = getString(R.string.dropdown_all_contact);
-        devices.add(all);
-
-        if (selectedGroup == 0) {
-            for (GroupInfo g : groups) {
-                for (DeviceInfo d : g.getDeviceInfoList()) {
-                    devices.add(d);
-                }
-            }
-        } else {
-            for (DeviceInfo d : groups.get(selectedGroup).getDeviceInfoList()) {
-                devices.add(d);
-            }
+        if (groups.size() == 0){
+            data.selectedGroup = -1;
+            leaveButton.setVisibility(View.INVISIBLE);
         }
+        else {
+            data.selectedGroup = 0;
+            groupSpinner.setSelection(data.selectedGroup);
+            leaveButton.setVisibility(View.VISIBLE);
 
-        personSpinner.setAdapter(new PersonAdapter(getContext(), R.layout.list_person_line, R.id.list_person_item_text, devices));
-        personSpinner.setSelection(selectedPerson);
-
+        }
+        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
+        createArrows();
     }
 
 
@@ -206,7 +162,8 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         }
         arrows.clear();
 
-        for (GroupInfo g: groups){
+        if (data.selectedGroup >= 0){
+            GroupInfo g = groups.get(data.selectedGroup);
             int c = getResources().getColor(data.groupColor.get(g.id));
             for (DeviceInfo d: g.getDeviceInfoList()){
                 ArrowView a = new ArrowView(getContext());
@@ -251,7 +208,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
     private void createNewGroup() {
-        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), this.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
+        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), this.data.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
         gs.execute();
     }
 
@@ -260,20 +217,13 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
      */
     private void leaveGroup() {
 
-        String hash = this.data.groups.get(this.selectedGroup).hash;
+        String hash = this.data.groups.get(data.selectedGroup).hash;
 
         GroupLeaveAsyncTask gl = new GroupLeaveAsyncTask(hash, MainActivity.getActivity().getResourceCrafter());
         gl.execute();
 
-        if (selectedGroup == 0) {
-            data.initNew();
-        }
-        else {
-            data.disconnectFromGroup(selectedGroup);
-        }
+        data.disconnectFromGroup(data.selectedGroup);
 
-        selectedGroup = 0;
-        selectedPerson = 0;
         updateView();
     }
 
@@ -294,43 +244,28 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
             groupSizeText.setText(groups.get(position).toString());
 
-            ImageView groupIcon = (ImageView) spinnerElement.findViewById(R.id.list_group_item_img);
-            Drawable icon = getResources().getDrawable(R.drawable.list_group_none);
-            icon = icon.mutate();
-            icon.setColorFilter(getResources().getColor(data.groupColor.get(groups.get(position).id)), PorterDuff.Mode.MULTIPLY);
-            groupIcon.setImageDrawable(icon);
+            SquareImageView imageView = (SquareImageView) spinnerElement.findViewById(R.id.list_group_item_img);
+            imageView.setBackgroundColor(getResources().getColor(data.groupColor.get(groups.get(position).id)));
 
             return spinnerElement;
-        }
-
-    }
-
-    /**
-     * Custom ArrayAdapter for DeviceInfo in the Spinner
-     */
-    public class PersonAdapter extends ArrayAdapter<DeviceInfo> {
-
-        public PersonAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<DeviceInfo> objects) {
-            super(ctx, lineLayout, txtViewResourceId, objects);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = getActivity().getLayoutInflater();
-            View spinnerElement = inflater.inflate(R.layout.list_person_line, parent, false);
+        public View getDropDownView(int position, View convertView, ViewGroup parent){
+            View v = convertView;
 
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.list_group_line, null);
+            }
 
-            TextView personText = (TextView) spinnerElement.findViewById(R.id.list_person_item_text);
-            personText.setText(devices.get(position).toString());
+            TextView groupSizeText = (TextView) v.findViewById(R.id.list_group_item_text);
+            groupSizeText.setText(groups.get(position).toString());
 
-            /**
-             ImageView personIcon = (ImageView) spinnerElement.findViewById(R.id.list_person_item_img);
-             Drawable icon = getResources().getDrawable(R.drawable.list_single_none);
-             icon = icon.mutate();
-             icon.setColorFilter(getResources().getColor(deviceInfoItems[position].color), PorterDuff.Mode.MULTIPLY);
-             personIcon.setImageDrawable(icon);
-             */
-            return spinnerElement;
+            SquareImageView imageView = (SquareImageView) v.findViewById(R.id.list_group_item_img);
+            imageView.setBackgroundColor(getResources().getColor(data.groupColor.get(groups.get(position).id)));
+
+            return v;
         }
 
     }

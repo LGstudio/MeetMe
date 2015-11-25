@@ -25,7 +25,7 @@
 
     <string name="share_link">http://meetme.poul.cz/group/</string>
     <string name="share_msg_new">Create new group ..</string>
-    <string name="share_msg_existing">Invite into group ..</string>
+    <string name="share_msg_existing">Invite into this group ..</string>
 
     <string name="network_dialog_title">Internet connection is disabled.</string>
     <string name="network_dialog_text">Please, check your connection!</string>

@@ -25,13 +25,16 @@ public class AllConnectionData {
     public GroupColor colors;
     public HashMap<Integer, Integer> groupColor;
     public ArrayList<GroupInfo> groups;
+    public int selectedGroup = -1;
 
     private Activity parent;
 
     public AllConnectionData(Activity a){
         parent = a;
 
-        initNew();
+        colors = new GroupColor();
+        groupColor = new HashMap<>();
+        groups = new ArrayList<>();
     }
 
     public ArrayList<DataMap> getDataMap() {
@@ -83,22 +86,6 @@ public class AllConnectionData {
         }
 
     }
-
-    public void initNew(){
-        colors = new GroupColor();
-        groupColor = new HashMap<>();
-
-        groups = new ArrayList<>();
-
-        GroupInfo allGroup = new GroupInfo();
-        allGroup.hash = parent.getString(R.string.dropdown_all_group);
-        allGroup.id = 0;
-        groups.add(allGroup);
-
-        groupColor.put(0, R.color.flat_brightness_difference_light);
-
-
-   }
 
     /**
      * TEST DATA ----------------------------------------

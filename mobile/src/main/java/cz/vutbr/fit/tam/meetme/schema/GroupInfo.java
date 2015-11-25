@@ -25,10 +25,27 @@ public class GroupInfo {
     }
 
     public String toString(){
-        //return "(" + id + ")";
-        if (id != 0)
-            return String.valueOf(deviceInfoList.size());
-        else
-            return hash;
+        int size = deviceInfoList.size();
+        String text;
+        switch (size){
+            case 0:
+                text = "(empty group)";
+                break;
+            case 1:
+                text = deviceInfoList.get(0).name;
+                break;
+            case 2:
+                text = deviceInfoList.get(0).name + " & " + deviceInfoList.get(1).name;
+                break;
+            case 3:
+                text = deviceInfoList.get(0).name + ", " + deviceInfoList.get(1).name + " & 1 other";
+                break;
+            default:
+                int s = size - 2;
+                text = deviceInfoList.get(0).name + ", " + deviceInfoList.get(1).name + " & " + s + " others";
+                break;
+        }
+
+        return text;
     }
 }
