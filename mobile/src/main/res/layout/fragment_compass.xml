@@ -63,41 +63,36 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="0.12"
         android:orientation="horizontal"
         android:weightSum="1"
-        android:gravity="center_vertical|center_horizontal">
+        android:gravity="center_vertical">
 
         <cz.vutbr.fit.tam.meetme.gui.SquareButton
             android:id="@+id/button_exit"
-            android:layout_width="0dp"
-            android:layout_weight="0.15"
+            android:layout_width="@dimen/add_button_size"
             android:layout_height="@dimen/add_button_size"
             android:textSize="@dimen/button_text_height"
             android:layout_gravity="center"
             android:textColor="@color/bckColor"
             android:text="X"
             android:background="@drawable/button_exit"
-            />
+            android:layout_alignParentStart="true"/>
 
-        <android.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_weight="0.60"/>
 
         <cz.vutbr.fit.tam.meetme.gui.SquareButton
-        android:id="@+id/button_add"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/add_button_size"
-        android:layout_weight="0.15"
-        android:text="+"
-        android:textSize="25dp"
-        android:textColor="@color/bckColor"
-        android:background="@drawable/button_add"
-        android:gravity="center"/>
+            android:id="@+id/button_add"
+            android:layout_width="@dimen/add_button_size"
+            android:layout_height="@dimen/add_button_size"
+            android:text="+"
+            android:textSize="25dp"
+            android:textColor="@color/bckColor"
+            android:background="@drawable/button_add"
+            android:gravity="center"
+            android:layout_alignParentEnd="true"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>

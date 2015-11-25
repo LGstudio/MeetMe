@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public static final String GROUP_HASH="group_hash";
     private final int NOTIFICATION_ID = 1;
 
-    private boolean isLoggedIn = true;
-
     private boolean isMapShowed = false;
     private CompassFragment fragCompass;
     private MapViewFragment fragMap;
@@ -141,12 +139,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         handleOpenViaUrl();
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        Log.d(LOG_TAG, "onStop");
-        doUnbindService();
-    }
 
     @Override
     public void onDestroy() {
@@ -193,12 +185,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         loc.setLongitude(MainActivity.this.data.myLongitude);
 
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
+                        MainActivity.this.showNotification();
+                        doBindService(MainActivity.this.newUrlGroupHash);
                     }
                     catch(InternalErrorException e){
                         Log.e(LOG_TAG, e.getMessage());
                     }
-
-                    doBindService(MainActivity.this.newUrlGroupHash);
                 }
             }).start();
         }
@@ -240,8 +232,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      */
     private void initLayout(){
 
-        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), this.getApplicationContext());
-
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
 
         gpsStatus = (ImageButton) findViewById(R.id.toolbar_gps_stat);
@@ -259,6 +249,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         data.myName = prefs.getString(getString(R.string.pref_name), null);
 
+        //TODO : REMOVE TEST DATA
+        data.addShit();
+        //TODO : -----------------
+
         viewPager = (CustomViewPager) findViewById(R.id.pager);
         viewPager.setPagingEnabled(false);
 
@@ -266,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             showWelcome();
         }
         else {
+            resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), data.myName, this.getApplicationContext());
             showLoggedIn();
         }
 
@@ -502,6 +497,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return true;
     }
 
+    public GetGroupDataService.MyLocalBinder getBinder() {
+        return binder;
+    }
+
     /**
      * --------------------------------------------------------------------------------
      * -------------- Broadcast Receivers ---------------------------------------------
@@ -616,6 +615,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             fragCompass.updateView();
             if (isMapShowed) fragMap.updateLocations();
         }
+
+
     }
 
     /**
@@ -624,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      * --------------------------------------------------------------------------------
      */
 
-    private class WelcomeScreen extends Fragment implements View.OnClickListener{
+    public class WelcomeScreen extends Fragment implements View.OnClickListener{
 
         private EditText nameField;
         private Button button;
@@ -647,7 +648,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if (v.getId() == R.id.welcome_ok_button){
                 String name = nameField.getText().toString();
 
-                if (name.length() < 5 ){
+                if (name.length() < 1 ){
                     information.setText(getString(R.string.intro_info_warning));
                     information.setTextColor(getResources().getColor(R.color.indication_bad));
                 }
@@ -661,6 +662,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 }
             }
         }
+
+
     }
 
     /**
