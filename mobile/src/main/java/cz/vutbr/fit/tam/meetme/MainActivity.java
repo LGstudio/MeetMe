@@ -625,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      * --------------------------------------------------------------------------------
      */
 
-    private class WelcomeScreen extends Fragment implements View.OnClickListener{
+    public class WelcomeScreen extends Fragment implements View.OnClickListener{
 
         private EditText nameField;
         private Button button;
