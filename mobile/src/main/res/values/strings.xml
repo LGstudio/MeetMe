@@ -17,6 +17,11 @@
     <string name="rotation_x">rotation-x</string>
     <string name="rotation_y">rotation-y</string>
     <string name="rotation_z">rotation-z</string>
+
+    <string name="wear_intent_filter">wearable-connection-intent-filter</string>
+    <string name="wear_init_status">wearable-init-status</string>
+    <string name="wear_connection_status">wearable-connection-status</string>
+
     <string name="map_me">Me</string>
 
     <string name="pref_last_lon">cz.vutbr.fit.tam.meetme.lastknownlon</string>

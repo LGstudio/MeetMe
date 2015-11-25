@@ -2,6 +2,7 @@ package cz.vutbr.fit.tam.meetme.service;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -11,6 +12,7 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
@@ -38,17 +40,27 @@ public class DataReceiverService extends WearableListenerService {
         if (!mGoogleApiClient.isConnected())
             mGoogleApiClient.connect();
 
+        new ConnectionAsyncTask(mGoogleApiClient).execute();
+
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mGoogleApiClient.disconnect();
+
+        if (mGoogleApiClient != null)
+            mGoogleApiClient.disconnect();
+
+        stopSelf();
     }
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
+
+        if (!connected) {
+            return;
+        }
 
         for (DataEvent event : dataEvents) {
 
@@ -86,15 +98,44 @@ public class DataReceiverService extends WearableListenerService {
     @Override
     public void onPeerConnected(Node peer) {
         super.onPeerConnected(peer);
+
         connected = true;
-        // TODO: send to mobile
+        sendConnectionStatus();
     }
 
     @Override
     public void onPeerDisconnected(Node peer) {
         super.onPeerDisconnected(peer);
+
         connected = false;
-        // TODO: send to mobile
-        // TODO: show sth
+        sendConnectionStatus();
+    }
+
+    public void sendConnectionStatus() {
+        Context context = getApplicationContext();
+
+        Intent intent = new Intent(context.getString(R.string.wear_status_intent_filter));
+        intent.putExtra(context.getString(R.string.wear_connection_status), connected);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+
+    public class ConnectionAsyncTask extends AsyncTask<Void,Void,Void> {
+
+        GoogleApiClient googleApiClient;
+
+        public ConnectionAsyncTask(GoogleApiClient googleApiClient) {
+            this.googleApiClient = googleApiClient;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+            connected = (nodes != null && nodes.getNodes().size() > 0);
+            sendConnectionStatus();
+            return null;
+        }
     }
 }

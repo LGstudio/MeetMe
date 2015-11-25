@@ -5,5 +5,9 @@
     <string name="wear_rotation_intent_filter">wearable-orientation-event</string>
     <string name="rotation_x">wearable-rotation-x</string>
 
-    <string name="wear_data_intent_filter">wearable--data-received-event</string>
+    <string name="wear_data_intent_filter">wearable-data-intent-filter</string>
+
+    <string name="wear_status_intent_filter">wearable-status-intent-filter</string>
+    <string name="wear_connection_status">wearable-connection-status</string>
+
 </resources>

@@ -32,6 +32,7 @@ public class MainActivity extends WearableActivity {
     private TextView mClockView;
 
     ArrayList<ConnectionData> data;
+    boolean handheldConnected;
 
     Intent sensorIntent;
     Intent dataIntent;
@@ -45,10 +46,15 @@ public class MainActivity extends WearableActivity {
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
 
+        handheldConnected = true;
+
         dataIntent = new Intent(this, DataReceiverService.class);
         startService(dataIntent);
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 handheldDataReceiver, new IntentFilter(this.getString(R.string.wear_data_intent_filter))
+        );
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                statusReceiver, new IntentFilter(this.getString(R.string.wear_status_intent_filter))
         );
 
         sensorIntent = new Intent(this, SensorService.class);
@@ -79,6 +85,7 @@ public class MainActivity extends WearableActivity {
 
         stopService(new Intent(this, DataReceiverService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(handheldDataReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(statusReceiver);
     }
 
     @Override
@@ -113,6 +120,12 @@ public class MainActivity extends WearableActivity {
         }
     }
 
+    /**
+     * --------------------------------------------------------------------------------
+     * -------------- Local Broadcast Receivers ---------------------------------------
+     * --------------------------------------------------------------------------------
+     */
+
     private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -145,6 +158,18 @@ public class MainActivity extends WearableActivity {
             }
 
             // TODO: remove item
+        }
+    };
+
+    private BroadcastReceiver statusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handheldConnected = intent.getBooleanExtra(getString(R.string.wear_connection_status), true);
+
+            if (handheldConnected) {
+
+                // TODO: show dialog (device disconnected)
+            }
         }
     };
 }
