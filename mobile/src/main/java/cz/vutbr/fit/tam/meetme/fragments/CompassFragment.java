@@ -1,11 +1,13 @@
 package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,7 +85,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 data.selectedGroup = position;
-                leaveButton.setVisibility(View.VISIBLE);
                 this.handleServiceSwitch();
                 createArrows();
             }
@@ -196,7 +197,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_add:
-                createNewGroup();
+                askWhereToInvite();
                 break;
             case R.id.button_exit:
                 leaveGroup();
@@ -207,9 +208,37 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     /**
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
-    private void createNewGroup() {
-        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), this.data.selectedGroup, this.data, MainActivity.getActivity().getResourceCrafter());
+    private void createNewGroup(int id) {
+        GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), id, this.data, MainActivity.getActivity().getResourceCrafter());
         gs.execute();
+    }
+
+    private void askWhereToInvite(){
+
+        if (data.selectedGroup < 0){
+            createNewGroup(-1);
+        }
+        else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("Invite into ..");
+            builder.setItems(new CharSequence[]
+                            {"New group", "Actual group"},
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // The 'which' argument contains the index position
+                            // of the selected item
+                            switch (which) {
+                                case 0:
+                                    createNewGroup(-1);
+                                    break;
+                                case 1:
+                                    createNewGroup(data.selectedGroup);
+                                    break;
+                            }
+                        }
+                    });
+            builder.create().show();
+        }
     }
 
     /**

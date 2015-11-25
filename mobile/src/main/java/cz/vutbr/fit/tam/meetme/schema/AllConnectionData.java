@@ -146,9 +146,10 @@ public class AllConnectionData {
         groups.add(testGroup2);
     }
 
-    public void disconnectFromGroup(int id){
-        groups.remove(id);
-        groupColor.remove(id);
+    public void disconnectFromGroup(int number){
+        groupColor.remove(groups.get(number).id);
+        groups.remove(number);
+
     }
 
     /**
