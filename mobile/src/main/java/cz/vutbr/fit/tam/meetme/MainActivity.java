@@ -54,6 +54,7 @@ import cz.vutbr.fit.tam.meetme.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.service.GPSLocationService;
 import cz.vutbr.fit.tam.meetme.service.GetGroupDataService;
 import cz.vutbr.fit.tam.meetme.service.SensorService;
+import cz.vutbr.fit.tam.meetme.service.WearConnectionService;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection, View.OnClickListener {
 
@@ -97,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         setContentView(R.layout.activity_main);
         this.activity = this;
 
+        wearableConnected = false;
+
         if (checkGooglePlayServices()) {
 
             googleApiClient = new GoogleApiClient.Builder(this)
@@ -105,10 +108,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             if (!googleApiClient.isConnected())
                 googleApiClient.connect();
-        }
 
-        wearableConnected = false;
-        new WearConnectionAsyncTask(googleApiClient).execute();
+            Intent connectionIntent = new Intent(this, WearConnectionService.class);
+            new WearConnectionAsyncTask(googleApiClient, connectionIntent).execute();
+            LocalBroadcastManager.getInstance(this).registerReceiver(
+                    wearableConnection, new IntentFilter(this.getString(R.string.wear_intent_filter))
+            );
+        }
 
         prefs = this.getSharedPreferences("cz.vutbr.fit.tam.meetme", Context.MODE_PRIVATE);
 
@@ -153,6 +159,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+
+        stopService(new Intent(this, WearConnectionService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(wearableConnection);
 
         dismissNotification();
         doUnbindService();
@@ -295,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         startPositionReceiver();
 
-        if (wearableConnected) {
+        if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
             new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
         }
     }
@@ -453,8 +462,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(LOG_TAG, "service binded!");
-            MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
+        Log.d(LOG_TAG, "service binded!");
+        MainActivity.this.binder = (GetGroupDataService.MyLocalBinder) service;
     }
 
     @Override
@@ -543,9 +552,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
             data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
-            if (wearableConnected) {
+            if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
                 new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
             }
+        }
+    };
+
+    private BroadcastReceiver wearableConnection = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            wearableConnected = intent.getBooleanExtra(context.getString(R.string.wear_connection_status), true);
         }
     };
 
@@ -603,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         GroupUpdaterTask groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
 
-        if (wearableConnected) {
+        if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
             new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
         }
     }
@@ -687,9 +703,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public class WearConnectionAsyncTask extends AsyncTask<Void,Void,Void> {
 
         GoogleApiClient googleApiClient;
+        Intent intent;
 
-        public WearConnectionAsyncTask(GoogleApiClient googleApiClient) {
+        public WearConnectionAsyncTask(GoogleApiClient googleApiClient, Intent intent) {
             this.googleApiClient = googleApiClient;
+            this.intent = intent;
         }
 
         @Override
@@ -697,6 +715,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
             wearableConnected = (nodes != null && nodes.getNodes().size() > 0);
+
+            Context context = getApplicationContext();
+            intent.putExtra(context.getString(R.string.wear_init_status), wearableConnected);
+            startService(intent);
+
             return null;
         }
     }
