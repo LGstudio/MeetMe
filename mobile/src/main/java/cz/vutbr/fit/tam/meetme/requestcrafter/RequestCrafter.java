@@ -3,6 +3,7 @@ package cz.vutbr.fit.tam.meetme.requestcrafter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.util.Log;
 
 import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.schema.DeviceInfo;
@@ -194,6 +195,8 @@ public class RequestCrafter implements RequestCrafterInterface{
                                                   final Map<String, String> urlParams,
                                                   final MultiValueMap<String, String> body) {
 
+
+        Log.d(LOG_TAG, "request created");
 
         // Create a new RestTemplate instance
         RestTemplate restTemplate = new RestTemplate();

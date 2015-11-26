@@ -2,9 +2,11 @@ package cz.vutbr.fit.tam.meetme.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -24,10 +26,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import cz.vutbr.fit.tam.meetme.MainActivity;
 import cz.vutbr.fit.tam.meetme.R;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupLeaveAsyncTask;
 import cz.vutbr.fit.tam.meetme.asynctasks.GroupShareAsyncTask;
+import cz.vutbr.fit.tam.meetme.exceptions.InternalErrorException;
 import cz.vutbr.fit.tam.meetme.gui.RoundImageView;
 import cz.vutbr.fit.tam.meetme.gui.SquareButton;
 import cz.vutbr.fit.tam.meetme.gui.SquareImageView;
@@ -85,7 +94,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 data.selectedGroup = position;
-                this.handleServiceSwitch();
+               // this.handleServiceSwitch();
                 createArrows();
             }
 
@@ -97,9 +106,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                     Log.d(LOG_TAG, "binder is null");
 
                     //null takze zadna service nebezela -> zapnem service
-
-                    //show notification that meetme is running
-                    MainActivity.getActivity().showNotification();
 
                     //bind to new service
                     MainActivity.getActivity().doBindService(selectedGroupHash);
@@ -113,9 +119,6 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
                     Log.d(LOG_TAG, "joining to new group");
 
                     MainActivity.getActivity().doUnbindService();
-
-                    //show notification that meetme is running
-                    MainActivity.getActivity().showNotification();
 
                     //bind to new service
                     MainActivity.getActivity().doBindService(selectedGroupHash);
@@ -208,9 +211,14 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     /**
      * Creates new group by sending request to server, then ask the user to share the link with someone
      */
-    private void createNewGroup(int id) {
+    private void createNewGroup(final int id) {
+
         GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), id, this.data, MainActivity.getActivity().getResourceCrafter());
-        gs.execute();
+        //gs.execute();
+        //gs.executeOnExecutor(threadPoolExecutor);
+        //jen zavolani metody asynctasku kvuli app performance
+        gs.groupShareThread();
+
     }
 
     private void askWhereToInvite(){

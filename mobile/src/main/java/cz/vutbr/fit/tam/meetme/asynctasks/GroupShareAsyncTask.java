@@ -58,9 +58,6 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        //show notification that meetme is running
-        MainActivity.getActivity().showNotification();
-
         //bind to new service
         MainActivity.getActivity().doBindService(this.group.hash);
 
@@ -72,6 +69,41 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
         intent2.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
         MainActivity.getActivity().startActivity(Intent.createChooser(intent2, this.shareMsg));
 
+    }
+
+    public void groupShareThread(){
+        new Thread(new Runnable() {
+            public void run() {
+                if (selectedGroup == -1 || data.groups.get(selectedGroup) == null) {
+                    try {
+                        GroupShareAsyncTask.this.loc.setLatitude(MainActivity.getActivity().getData().myLatitude);
+                        GroupShareAsyncTask.this.loc.setLongitude(MainActivity.getActivity().getData().myLongitude);
+
+                        GroupShareAsyncTask.this.group = GroupShareAsyncTask.this.resourceCrafter.restGroupCreate(GroupShareAsyncTask.this.loc);
+                        data.updateGroupInfo(GroupShareAsyncTask.this.group);
+                        GroupShareAsyncTask.this.shareMsg = GroupShareAsyncTask.this.context.getString(R.string.share_msg_new);
+                    } catch(Exception e){
+                        Log.e(TAG, e.getMessage());
+                        MainActivity.getActivity().showToastMsg("excetion: " + e.getMessage());
+                    }
+                }
+                else {
+                    GroupShareAsyncTask.this.group = data.groups.get(selectedGroup);
+                    GroupShareAsyncTask.this.shareMsg = GroupShareAsyncTask.this.context.getString(R.string.share_msg_existing);
+                }
+
+                //bind to new service
+                MainActivity.getActivity().doBindService(GroupShareAsyncTask.this.group.hash);
+
+                String shareUrl = GroupShareAsyncTask.this.context.getString(R.string.share_link) + GroupShareAsyncTask.this.group.hash;
+
+                Intent intent2 = new Intent(Intent.ACTION_SEND);
+                intent2.setType("text/plain");
+                intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent2.putExtra(android.content.Intent.EXTRA_TEXT, shareUrl);
+                MainActivity.getActivity().startActivity(Intent.createChooser(intent2, GroupShareAsyncTask.this.shareMsg));
+            }
+        }).start();
     }
 
 
