@@ -161,6 +161,19 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         prefs.edit().putString(getString(R.string.pref_last_lon), String.valueOf(data.myLongitude)).apply();
     }
 
+    @Override
+    public void onBackPressed(){
+        if(viewPager.getCurrentItem() != 0){
+            showMap.setVisibility(View.VISIBLE);
+            backToCompass.setVisibility(View.GONE);
+            isMapShowed = false;
+            viewPager.setCurrentItem(0);
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
+
     /**
      * --------------------------------------------------------------------------------
      * ------------- Init activity ----------------------------------------------------
