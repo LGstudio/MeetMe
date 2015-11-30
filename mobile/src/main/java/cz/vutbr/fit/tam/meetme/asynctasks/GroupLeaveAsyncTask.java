@@ -37,8 +37,6 @@ public class GroupLeaveAsyncTask  extends AsyncTask<Void,Void,Void> {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            MainActivity.getActivity().dismissNotification();
-
             //unbind service
             MainActivity.getActivity().doUnbindService();
 

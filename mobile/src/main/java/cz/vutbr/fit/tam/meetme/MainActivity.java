@@ -36,6 +36,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -207,11 +209,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         loc.setLongitude(MainActivity.this.data.myLongitude);
 
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
-                        MainActivity.this.showNotification();
                         doBindService(MainActivity.this.newUrlGroupHash);
                     }
-                    catch(InternalErrorException e){
+                    catch(Exception e){
                         Log.e(LOG_TAG, e.getMessage());
+                        showToastMsg("excetion: "+e.getMessage());
                     }
                 }
             }).start();
@@ -272,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         data.myName = prefs.getString(getString(R.string.pref_name), null);
 
         //TODO : REMOVE TEST DATA
-        data.addShit();
+        //data.addShit();
         //TODO : -----------------
 
         viewPager = (CustomViewPager) findViewById(R.id.pager);
@@ -352,6 +354,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return (gps && net);
     }
 
+    /**
+     * --------------------------------------------------------------------------------
+     *  ------------- TOASTS ---------------------------------------------------
+     *  --------------------------------------------------------------------------------
+     */
+
+    public void showToastMsg(String msg){
+        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+    }
 
     /**
      * --------------------------------------------------------------------------------
@@ -359,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      *  --------------------------------------------------------------------------------
      */
 
-    public void showNotification() {
+    private void showNotification() {
         Intent resultIntent = new Intent(this, MainActivity.class);
 
         // Because clicking the notification opens a new ("special") activity, there's
@@ -375,6 +386,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_gps)
+                        .setOngoing(true)
                         .setContentTitle("MeetMe")
                         .setContentText("Meeting is running...")
                         .setContentIntent(takeToMeetMeIntent);
@@ -387,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         mNotifyMgr.notify(NOTIFICATION_ID, mBuilder.build());
     }
 
-    public void dismissNotification(){
+    private void dismissNotification(){
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // Sets an ID for the notification, so it can be updated
         int notifyID = 1;
@@ -476,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         i.putExtra(GROUP_HASH, groupHash);
         bindService(i, mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
+        this.showNotification();        //show notification that meetme is running
     }
 
     public void doUnbindService() {
@@ -483,6 +496,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             Log.d(LOG_TAG, "service UNbinded!");
             unbindService(mConnection);
             mIsBound = false;
+            this.binder = null;
+            this.dismissNotification();
         }
     }
 
