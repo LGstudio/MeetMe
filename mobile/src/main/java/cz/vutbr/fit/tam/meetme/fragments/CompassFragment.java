@@ -163,7 +163,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         }
         arrows.clear();
 
-        if (data.selectedGroup >= 0){
+        if (data.selectedGroup > -1){
             GroupInfo g = groups.get(data.selectedGroup);
             int c = getResources().getColor(data.groupColor.get(g.id));
             for (DeviceInfo d: g.getDeviceInfoList()){
