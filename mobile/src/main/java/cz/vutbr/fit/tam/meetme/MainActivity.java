@@ -111,8 +111,24 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             if (!googleApiClient.isConnected())
                 googleApiClient.connect();
 
-            Intent connectionIntent = new Intent(this, WearConnectionService.class);
-            new WearConnectionAsyncTask(googleApiClient, connectionIntent).execute();
+            final Intent connectionIntent = new Intent(this, WearConnectionService.class);
+            //new WearConnectionAsyncTask(googleApiClient, connectionIntent).execute();
+
+            //predelano z asynctasku na thread
+            new Thread(new Runnable() {
+                public void run() {
+                    NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+                    wearableConnected = (nodes != null && nodes.getNodes().size() > 0);
+
+                    Context context = getApplicationContext();
+                    connectionIntent.putExtra(context.getString(R.string.wear_init_status), wearableConnected);
+                    startService(connectionIntent);
+                }
+            }).start();
+
+
+
+
             LocalBroadcastManager.getInstance(this).registerReceiver(
                     wearableConnection, new IntentFilter(this.getString(R.string.wear_intent_filter))
             );
@@ -361,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      */
 
     public void showToastMsg(String msg){
-        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     /**

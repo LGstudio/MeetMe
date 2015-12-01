@@ -94,36 +94,39 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 data.selectedGroup = position;
-               // this.handleServiceSwitch();
+                this.handleServiceSwitch();
                 createArrows();
             }
 
             private void handleServiceSwitch() {
-                GroupInfo gi = groups.get(data.selectedGroup);
-                String selectedGroupHash = gi.hash;
 
-                if(MainActivity.getActivity().getBinder() == null){
-                    Log.d(LOG_TAG, "binder is null");
+              if(data.selectedGroup!= -1) {
+                  GroupInfo gi = groups.get(data.selectedGroup);
+                  String selectedGroupHash = gi.hash;
 
-                    //null takze zadna service nebezela -> zapnem service
+                  if (MainActivity.getActivity().getBinder() == null) {
+                      Log.d(LOG_TAG, "binder is null");
 
-                    //bind to new service
-                    MainActivity.getActivity().doBindService(selectedGroupHash);
+                      //null takze zadna service nebezela -> zapnem service
 
-                }else if(selectedGroupHash.equals(MainActivity.getActivity().getBinder().getService().getGroupHash())){
-                    //selectnuta skupina je rovna ty pro kterou service prave bezi, nic nedelame
-                    Log.d(LOG_TAG, "same group selected");
-                }
-                else{
-                    //prepojeni na novou skupinu
-                    Log.d(LOG_TAG, "joining to new group");
+                      //bind to new service
+                      MainActivity.getActivity().doBindService(selectedGroupHash);
 
-                    MainActivity.getActivity().doUnbindService();
+                  } else if (selectedGroupHash.equals(MainActivity.getActivity().getBinder().getService().getGroupHash())) {
+                      //selectnuta skupina je rovna ty pro kterou service prave bezi, nic nedelame
+                      Log.d(LOG_TAG, "same group selected");
+                  } else {
+                      //prepojeni na novou skupinu
+                      Log.d(LOG_TAG, "joining to new group");
 
-                    //bind to new service
-                    MainActivity.getActivity().doBindService(selectedGroupHash);
-                }
+                      MainActivity.getActivity().doUnbindService();
 
+                      //bind to new service
+                      MainActivity.getActivity().doBindService(selectedGroupHash);
+                  }
+              }
+              else
+                MainActivity.getActivity().doUnbindService();
 
             }
 
@@ -150,12 +153,14 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             leaveButton.setVisibility(View.INVISIBLE);
         }
         else {
-            data.selectedGroup = 0;
             groupSpinner.setSelection(data.selectedGroup);
             leaveButton.setVisibility(View.VISIBLE);
-
         }
         groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
+
+        if(data.selectedGroup!=-1)
+            groupSpinner.setSelection(data.selectedGroup, false);
+
         createArrows();
     }
 
@@ -261,6 +266,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
 
         data.disconnectFromGroup(data.selectedGroup);
 
+        data.selectedGroup -= 1;//automaticky oznacime za selectlou skupinu na pozici -1
         updateView();
     }
 
