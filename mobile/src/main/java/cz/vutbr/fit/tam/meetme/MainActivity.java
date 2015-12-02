@@ -686,14 +686,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public class WelcomeScreen extends Fragment implements View.OnClickListener{
 
         private EditText nameField;
-        private Button button;
+        private ImageButton button;
         private TextView information;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View v = inflater.inflate(R.layout.fragment_welcome, container, false);
 
-            button = (Button) v.findViewById(R.id.welcome_ok_button);
+            button = (ImageButton) v.findViewById(R.id.welcome_ok_button);
             button.setOnClickListener(this);
             nameField = (EditText) v.findViewById(R.id.welcome_name_field);
             information = (TextView) v.findViewById(R.id.welcome_information);

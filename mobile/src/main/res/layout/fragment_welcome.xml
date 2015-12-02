@@ -107,11 +107,14 @@
             android:singleLine="true"
             android:maxLength="20"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/welcome_ok_button"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
-            android:layout_weight="0.2"/>
+            android:layout_weight="0.2"
+            android:src="@drawable/ic_ok"
+            android:background="@color/transparent"
+            />
 
     </LinearLayout>
 
