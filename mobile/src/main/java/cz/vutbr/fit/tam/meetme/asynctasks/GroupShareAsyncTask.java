@@ -1,5 +1,6 @@
 package cz.vutbr.fit.tam.meetme.asynctasks;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -23,6 +24,7 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     private String shareMsg;
     private int selectedGroup;
     private AllConnectionData data;
+    private ProgressDialog dialog;
 
     public GroupShareAsyncTask(Context context, int selectedGroup, AllConnectionData data, RequestCrafter rc){
         this.resourceCrafter = rc;
@@ -30,6 +32,14 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
         this.loc = new Location("asyncTaskLoc");
         this.selectedGroup = selectedGroup;
         this.data = data;
+        dialog = new ProgressDialog(context);
+    }
+
+    @Override
+    protected void onPreExecute() {
+        dialog.setMessage("Creating group...");
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
     }
 
     @Override
@@ -59,6 +69,10 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+
+        if (dialog.isShowing()) {
+            dialog.dismiss();
+        }
 
         //bind to new service
         MainActivity.getActivity().doBindService(this.group.hash);

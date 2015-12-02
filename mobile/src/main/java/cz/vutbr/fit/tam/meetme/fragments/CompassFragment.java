@@ -220,10 +220,10 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     private void createNewGroup(final int id) {
 
         GroupShareAsyncTask gs = new GroupShareAsyncTask(this.getContext(), id, this.data, MainActivity.getActivity().getResourceCrafter());
-        //gs.execute();
+        gs.execute();
         //gs.executeOnExecutor(threadPoolExecutor);
         //jen zavolani metody asynctasku kvuli app performance
-        gs.groupShareThread();
+        //gs.groupShareThread();
 
     }
 

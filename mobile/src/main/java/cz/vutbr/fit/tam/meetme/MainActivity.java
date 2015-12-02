@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -20,6 +21,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -41,6 +43,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     private static final String LOG_TAG = "MainActivity";
     public static final String GROUP_HASH="group_hash";
+    private static final int REQUEST_CODE_LOCATION = 111;//nahaluz nejake id :D
     private final int NOTIFICATION_ID = 1;
 
     private boolean isMapShowed = false;
@@ -101,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         this.activity = this;
 
         wearableConnected = false;
+
+
 
         if (checkGooglePlayServices()) {
 
@@ -147,12 +153,64 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             MainActivity.this.showLocationDialog();
         }
 
-        if (checkGooglePlayServices()) {
+        if (checkGooglePlayServices() && userAllowedLocation()) {
+            this.startGPSService();
+        }
+        else{
+            // Request missing location permission.
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_LOCATION);
+        }
+    }
 
-            startService(new Intent(this, GPSLocationService.class));
-            LocalBroadcastManager.getInstance(this).registerReceiver(
-                    gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
-            );
+    private void startGPSService() {
+        startService(new Intent(this, GPSLocationService.class));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                gpsReceiver, new IntentFilter(this.getString(R.string.gps_intent_filter))
+        );
+    }
+
+    /**
+    * Check if app has permissions for fine location
+    * */
+    private boolean userAllowedLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        } else {
+            // Location permission has been granted, continue as usual.
+            return true;
+        }
+    }
+
+    /**
+    * Handler when permission was answered
+    * */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    this.startGPSService();
+
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    this.finishAffinity();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 
@@ -225,6 +283,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         loc.setLongitude(MainActivity.this.data.myLongitude);
 
                         GroupInfo gi = resourceCrafter.restGroupAttach(newUrlGroupHash, loc);
+                        //update spinner data
+                        data.updateGroupInfo(gi);
                         doBindService(MainActivity.this.newUrlGroupHash);
                     }
                     catch(Exception e){
@@ -300,13 +360,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             showWelcome();
         }
         else {
-            resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), data.myName, this.getApplicationContext());
             showLoggedIn();
         }
 
     }
 
     public void showLoggedIn(){
+        resourceCrafter = new RequestCrafter(System.getProperty("http.agent","NO USER AGENT"), data.myName, this.getApplicationContext());
+
         toolbar.setVisibility(View.VISIBLE);
 
         fragCompass = new CompassFragment();
