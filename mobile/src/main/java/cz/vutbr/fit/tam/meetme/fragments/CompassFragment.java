@@ -18,6 +18,7 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -156,7 +157,7 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
             groupSpinner.setSelection(data.selectedGroup);
             leaveButton.setVisibility(View.VISIBLE);
         }
-        groupSpinner.setAdapter(new GroupAdapter(getContext(), R.layout.list_group_line, R.id.list_group_item_text, groups));
+        groupSpinner.setAdapter(new GroupAdapter(getContext()));
 
         if(data.selectedGroup!=-1)
             groupSpinner.setSelection(data.selectedGroup, false);
@@ -234,22 +235,20 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         else {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Invite into ..");
-            builder.setItems(new CharSequence[]
-                            {"New group", "Actual group"},
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // The 'which' argument contains the index position
-                            // of the selected item
-                            switch (which) {
-                                case 0:
-                                    createNewGroup(-1);
-                                    break;
-                                case 1:
-                                    createNewGroup(data.selectedGroup);
-                                    break;
-                            }
-                        }
-                    });
+            builder.setItems(new CharSequence[] {"New group", "Actual group"}, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // The 'which' argument contains the index position
+                    // of the selected item
+                    switch (which) {
+                        case 0:
+                            createNewGroup(-1);
+                            break;
+                        case 1:
+                            createNewGroup(data.selectedGroup);
+                            break;
+                    }
+                }
+            });
             builder.create().show();
         }
     }
@@ -273,44 +272,42 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
     /**
      * Custom ArrayAdapter for GroupInfo in the Spinner
      */
-    public class GroupAdapter extends ArrayAdapter<GroupInfo> {
+    public class GroupAdapter extends BaseAdapter {
 
-        public GroupAdapter(Context ctx, int lineLayout, int txtViewResourceId, ArrayList<GroupInfo> objects) {
-            super(ctx, lineLayout, txtViewResourceId, objects);
+        Context context;
+
+        public GroupAdapter(Context ctx) {
+            context = ctx;
+        }
+
+        @Override
+        public int getCount() {
+            return groups.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return groups.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return groups.get(position).id;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = getActivity().getLayoutInflater();
-            View spinnerElement = inflater.inflate(R.layout.list_group_line, parent, false);
+            LayoutInflater inflater = LayoutInflater.from(context);
+            View spinnerElement = inflater.inflate(R.layout.list_group_line, null);
 
-            TextView groupSizeText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
-            groupSizeText.setText(groups.get(position).toString());
+            TextView groupText = (TextView) spinnerElement.findViewById(R.id.list_group_item_text);
+            groupText.setText(groups.get(position).toString());
 
-            SquareImageView imageView = (SquareImageView) spinnerElement.findViewById(R.id.list_group_item_img);
-            imageView.setBackgroundColor(getResources().getColor(data.groupColor.get(groups.get(position).id)));
+            TextView color = (TextView) spinnerElement.findViewById(R.id.list_group_item_color);
+            color.setBackgroundColor(getResources().getColor(data.groupColor.get(groups.get(position).id)));
 
             return spinnerElement;
         }
-
-        @Override
-        public View getDropDownView(int position, View convertView, ViewGroup parent){
-            View v = convertView;
-
-            if (v == null) {
-                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.list_group_line, null);
-            }
-
-            TextView groupSizeText = (TextView) v.findViewById(R.id.list_group_item_text);
-            groupSizeText.setText(groups.get(position).toString());
-
-            SquareImageView imageView = (SquareImageView) v.findViewById(R.id.list_group_item_img);
-            imageView.setBackgroundColor(getResources().getColor(data.groupColor.get(groups.get(position).id)));
-
-            return v;
-        }
-
     }
 
 }

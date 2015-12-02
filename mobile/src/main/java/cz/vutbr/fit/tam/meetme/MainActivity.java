@@ -675,8 +675,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             fragCompass.updateView();
             if (isMapShowed) fragMap.updateLocations();
         }
-
-
     }
 
     /**
