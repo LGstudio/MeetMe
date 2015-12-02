@@ -29,7 +29,7 @@
         android:layout_weight="0.73"
         android:id="@+id/arrow_area">
 
-        <cz.vutbr.fit.tam.meetme.gui.SquareImageView
+        <cz.vutbr.fit.tam.meetme.release.gui.SquareImageView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:scaleType="centerInside"
@@ -57,7 +57,7 @@
         android:weightSum="1"
         android:gravity="center_vertical">
 
-        <cz.vutbr.fit.tam.meetme.gui.SquareButton
+        <cz.vutbr.fit.tam.meetme.release.gui.SquareButton
             android:id="@+id/button_exit"
             android:layout_width="@dimen/add_button_size"
             android:layout_height="@dimen/add_button_size"
@@ -69,7 +69,7 @@
             android:layout_alignParentStart="true"/>
 
 
-        <cz.vutbr.fit.tam.meetme.gui.SquareButton
+        <cz.vutbr.fit.tam.meetme.release.gui.SquareButton
             android:id="@+id/button_add"
             android:layout_width="@dimen/add_button_size"
             android:layout_height="@dimen/add_button_size"

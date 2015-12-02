@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -17,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import cz.vutbr.fit.tam.meetme.schema.ConnectionData;
-import cz.vutbr.fit.tam.meetme.service.DataReceiverService;
-import cz.vutbr.fit.tam.meetme.service.SensorService;
+import cz.vutbr.fit.tam.meetme.release.schema.ConnectionData;
+import cz.vutbr.fit.tam.meetme.release.service.DataReceiverService;
+import cz.vutbr.fit.tam.meetme.release.service.SensorService;
 
 
 public class MainActivity extends WearableActivity {

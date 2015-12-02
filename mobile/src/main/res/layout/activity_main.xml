@@ -53,7 +53,7 @@
 
     </RelativeLayout>
 
-    <cz.vutbr.fit.tam.meetme.fragments.CustomViewPager
+    <cz.vutbr.fit.tam.meetme.release.fragments.CustomViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"

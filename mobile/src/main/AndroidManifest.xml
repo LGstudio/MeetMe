@@ -30,7 +30,7 @@
         <uses-library android:name="com.google.android.maps" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".release.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             android:allowEmbedded="false"
@@ -53,10 +53,10 @@
 
         </activity>
 
-        <service android:name=".service.GPSLocationService"/>
-        <service android:name=".service.SensorService"/>
-        <service android:name=".service.GetGroupDataService" />
-        <service android:name=".service.WearConnectionService">
+        <service android:name=".release.service.GPSLocationService"/>
+        <service android:name=".release.service.SensorService"/>
+        <service android:name=".release.service.GetGroupDataService" />
+        <service android:name=".release.service.WearConnectionService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER"/>
             </intent-filter>
