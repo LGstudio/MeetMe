@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion '23.0.2'
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
@@ -12,11 +12,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "cz.vutbr.fit.tam.meetme"
-        minSdkVersion 19
+        applicationId "cz.vutbr.fit.tam.meetme.release"
+        minSdkVersion 17
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.5"
     }
     buildTypes {
         release {
