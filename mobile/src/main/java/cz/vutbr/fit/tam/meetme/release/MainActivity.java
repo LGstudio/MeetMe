@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private CustomViewPager viewPager;
 
     private AllConnectionData data;
+    private Boolean isAppVisible;
 
     private RelativeLayout toolbar;
     private ImageButton gpsStatus;
@@ -215,13 +216,24 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public void onResume(){
         super.onResume();
         Log.d("GetGroupDataService", "onResume");
+        this.isAppVisible = true;
         handleOpenViaUrl();
     }
 
+    @Override
+    public void onPause(){
+        super.onPause();
+        this.isAppVisible = false;
+
+        //pausneme service na senzory
+        stopService(new Intent(this, SensorService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        this.isAppVisible = false;
 
         if (googleApiClient != null && googleApiClient.isConnected()) {
             googleApiClient.disconnect();
@@ -378,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         adapter.addFragment(fragMap);
         viewPager.setAdapter(adapter);
 
-        startPositionReceiver();
+        //startPositionReceiver(); moved to compassfragment on pause
 
         if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
             new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
@@ -532,6 +544,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         alertDialog.show();
     }
 
+    public Boolean getIsAppVisible() {
+        return isAppVisible;
+    }
 
     /**
      * Opens location settings window
@@ -618,14 +633,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      * --------------------------------------------------------------------------------
      */
 
-    private void startPositionReceiver(){
+    public void startPositionReceiver(){
         startService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 positionReceiver, new IntentFilter(this.getString(R.string.rotation_intent_filter))
         );
     }
 
-    private BroadcastReceiver positionReceiver = new BroadcastReceiver() {
+    public BroadcastReceiver positionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 

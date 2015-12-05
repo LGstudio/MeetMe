@@ -53,7 +53,8 @@ public class GetGroupDataService extends Service {
         //Log.i(LOG_TAG, "group info: " + gi.toString());
         MainActivity.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                MainActivity.getActivity().showGroupData(gi);
+               if(MainActivity.getActivity().getIsAppVisible())
+                    MainActivity.getActivity().showGroupData(gi);
             }
         });
     }

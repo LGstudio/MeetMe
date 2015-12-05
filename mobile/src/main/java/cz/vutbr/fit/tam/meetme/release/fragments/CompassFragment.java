@@ -2,9 +2,11 @@ package cz.vutbr.fit.tam.meetme.release.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +32,7 @@ import cz.vutbr.fit.tam.meetme.release.schema.AllConnectionData;
 import cz.vutbr.fit.tam.meetme.release.schema.DeviceInfo;
 import cz.vutbr.fit.tam.meetme.release.schema.GroupInfo;
 import cz.vutbr.fit.tam.meetme.release.gui.ArrowView;
+import cz.vutbr.fit.tam.meetme.release.service.SensorService;
 
 /**
  * @author Gebriel Lehocky
@@ -126,6 +129,20 @@ public class CompassFragment extends Fragment implements View.OnClickListener {
         createArrows();
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MainActivity.getActivity().startPositionReceiver();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //pausneme service na senzory
+        MainActivity.getActivity().stopService(new Intent(MainActivity.getActivity(), SensorService.class));
+        LocalBroadcastManager.getInstance(MainActivity.getActivity()).unregisterReceiver(MainActivity.getActivity().positionReceiver);
     }
 
     /**

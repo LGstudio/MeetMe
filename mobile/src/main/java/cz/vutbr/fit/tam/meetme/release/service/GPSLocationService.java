@@ -31,14 +31,12 @@ public class GPSLocationService extends Service implements
     private Location mLastLocation;
     private boolean mRequestingLocationUpdates;
 
-    private static long UPDATE_INTERVAL  = 1000;
-    private static long FASTEST_INTERVAL =  500;
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(UPDATE_INTERVAL)
-                .setFastestInterval(FASTEST_INTERVAL);
+                .setInterval(GetGroupDataService.PERIOD)
+                .setFastestInterval(GetGroupDataService.PERIOD);
     }
 
     protected void startLocationUpdates() {
