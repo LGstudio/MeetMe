@@ -223,11 +223,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     public void onPause(){
         super.onPause();
-        this.isAppVisible = false;
-
         //pausneme service na senzory
         stopService(new Intent(this, SensorService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(positionReceiver);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        this.isAppVisible = false;
     }
 
     @Override
@@ -298,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     }
                     catch(Exception e){
                         Log.e(LOG_TAG, e.getMessage());
-                        showToastMsg("excetion: "+e.getMessage());
                     }
                 }
             }).start();
@@ -315,6 +318,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             try{
                 //http://scattergoriesonline.net/meetme/groupHash
                 Uri data = getIntent().getData();
+
+                //vymaz
+                getIntent().setData(null);
 
                 List<String> params = data.getPathSegments();
                 //String first = params.get(0); // "meetme"
@@ -392,9 +398,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         //startPositionReceiver(); moved to compassfragment on pause
 
-        if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
+        /*if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
             new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
-        }
+        }*/
     }
 
     public void showWelcome(){
@@ -440,15 +446,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return (gps && net);
     }
 
-    /**
-     * --------------------------------------------------------------------------------
-     *  ------------- TOASTS ---------------------------------------------------
-     *  --------------------------------------------------------------------------------
-     */
-
-    public void showToastMsg(String msg){
-      //  Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-    }
 
     /**
      * --------------------------------------------------------------------------------
@@ -656,9 +653,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             data.myLatitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_latitude)));
             data.myLongitude = Double.parseDouble(intent.getStringExtra(context.getString(R.string.gps_longitude)));
 
-            if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
+            /*if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
                 new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
-            }
+            }*/
         }
     };
 
@@ -723,10 +720,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         GroupUpdaterTask groupUpdaterTask = new GroupUpdaterTask(g);
         groupUpdaterTask.execute((Void) null);
 
-        if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
+
+        /*if (wearableConnected && googleApiClient != null && googleApiClient.isConnected()) {
             new WearableSendAsyncTask(getApplicationContext(), googleApiClient, data.getDataMap()).execute();
-        }
+        }*/
     }
+
 
     private class GroupUpdaterTask extends AsyncTask<Void,Void,Void>{
 
@@ -802,7 +801,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
      * ----------- Wearable connection check and listeners ----------------------------
      * --------------------------------------------------------------------------------
      */
-    public class WearConnectionAsyncTask extends AsyncTask<Void,Void,Void> {
+    /*public class WearConnectionAsyncTask extends AsyncTask<Void,Void,Void> {
 
         GoogleApiClient googleApiClient;
         Intent intent;
@@ -824,5 +823,5 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
             return null;
         }
-    }
+    }*/
 }

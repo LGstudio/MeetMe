@@ -52,7 +52,7 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
 
                 this.group = this.resourceCrafter.restGroupCreate(this.loc);
                 data.updateGroupInfo(this.group);
-            } catch (InternalErrorException e) {
+            } catch (Exception e) {
                 Log.d(TAG, "exception: " + e.getMessage());
             }
         }
@@ -95,7 +95,6 @@ public class GroupShareAsyncTask extends AsyncTask<Void,Void,Void> {
                         data.updateGroupInfo(GroupShareAsyncTask.this.group);
                     } catch(Exception e){
                         Log.e(TAG, e.getMessage());
-                        MainActivity.getActivity().showToastMsg("excetion: " + e.getMessage());
                     }
                 }
                 else {

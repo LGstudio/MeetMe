@@ -66,6 +66,12 @@ public class GetGroupDataService extends Service {
         }
     }
 
+    public void stopTimer(){
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();

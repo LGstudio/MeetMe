@@ -167,7 +167,7 @@ public class RequestCrafter implements RequestCrafterInterface{
         GroupResponseInfo gri = (GroupResponseInfo) createRestRequestPrivate(GroupResponseInfo.class, HttpMethod.POST, REST_GROUP_ATTACH, urlParams, body);
 
         if(gri.getErrorCode() == DEVICE_ALREADY_ATTACHED) {
-            restGroupData(groupHash, location);
+            return restGroupData(groupHash, location);
         }
         else if(gri.getErrorCode() != 0)
             throw new InternalErrorException(gri.getErrorMessage());
@@ -205,6 +205,7 @@ public class RequestCrafter implements RequestCrafterInterface{
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.ALL));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("Connection", "Close");
 
         HttpEntity<String> entity;
 
